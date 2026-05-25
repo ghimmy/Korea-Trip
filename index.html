@@ -1255,7 +1255,7 @@ function renderRestaurants(restaurants) {
           '<div class="rcard-btns">' +
             '<a class="rcard-map-btn apple" href="https://maps.apple.com/?q='+mq+'" target="_blank">🗺️ Apple</a>' +
             '<a class="rcard-map-btn google" href="https://maps.google.com/maps?q='+mq+'" target="_blank">📍 Google</a>' +
-            '<a class="rcard-map-btn naver" href="https://m.map.naver.com/search2/search.naver?query='+(r.naverQuery || r.name)+'" target="_blank">🟢 Naver</a>' +
+            '<a class="rcard-map-btn naver" href="nmap://search?query='+encodeURIComponent(r.naverQuery || r.name)+'&appname=com.ghimmy.koreatrip" target="_blank">🟢 Naver</a>' +
           '</div>' +
         '</div>';
     });
@@ -1286,7 +1286,7 @@ function renderActivityCards(items, isOpt) {
     if (isOpt) badgesHtml += '<span class="badge badge-opt">✦ Optional</span>';
 
     var naverQuery = item.naverQuery || item.mapQuery;
-    var naverUrl = 'https://m.map.naver.com/search2/search.naver?query=' + naverQuery;
+    var naverUrl = 'nmap://search?query=' + encodeURIComponent(naverQuery) + '&appname=com.ghimmy.koreatrip';
     html +=
       '<div class="activity-card">' +
         '<div class="activity-card-header">' +
@@ -1358,7 +1358,7 @@ function renderDayContent(idx) {
         '<div class="btn-row">' +
           '<a class="action-btn btn-apple" href="https://maps.apple.com/?q='+mq+'" target="_blank">🗺️ Apple</a>' +
           '<a class="action-btn btn-google" href="https://maps.google.com/maps?daddr='+mq+'" target="_blank">📍 Google</a>' +
-          '<a class="action-btn btn-naver" href="https://m.map.naver.com/search2/search.naver?query='+(d.naverQuery || d.hotel)+'" target="_blank">🟢 Naver</a>' +
+          '<a class="action-btn btn-naver" href="nmap://search?query='+encodeURIComponent(d.naverQuery || d.hotel)+'&appname=com.ghimmy.koreatrip" target="_blank">🟢 Naver</a>' +
         '</div>' +
       '</div>' +
     '</div></div>'
