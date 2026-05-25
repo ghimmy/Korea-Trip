@@ -450,7 +450,7 @@ html, body { height: 100%; width: 100%; overflow: hidden; background: var(--blue
             <span class="header-plane">✈️</span>
             <div>
               <div class="header-title">Jeju Adventure</div>
-              <div class="header-sub">2–9 Jun 2025 · 🇰🇷</div>
+              <div class="header-sub">2–9 Jun 2025 · 🇰🇷 · v5</div>
             </div>
           </div>
         </div>
@@ -1255,7 +1255,7 @@ function renderRestaurants(restaurants) {
           '<div class="rcard-btns">' +
             '<a class="rcard-map-btn apple" href="https://maps.apple.com/?q='+mq+'" target="_blank">🗺️ Apple</a>' +
             '<a class="rcard-map-btn google" href="https://maps.google.com/maps?q='+mq+'" target="_blank">📍 Google</a>' +
-            '<a class="rcard-map-btn naver" href="nmap://search?query='+encodeURIComponent(r.naverQuery || r.name)+'&appname=com.ghimmy.koreatrip" target="_blank">🟢 Naver</a>' +
+            '<a class="rcard-map-btn naver" href="https://m.map.naver.com/search2/search.naver?query='+encodeURIComponent(r.naverQuery)+'" target="_blank">🟢 Naver</a>' +
           '</div>' +
         '</div>';
     });
@@ -1286,7 +1286,7 @@ function renderActivityCards(items, isOpt) {
     if (isOpt) badgesHtml += '<span class="badge badge-opt">✦ Optional</span>';
 
     var naverQuery = item.naverQuery || item.mapQuery;
-    var naverUrl = 'nmap://search?query=' + encodeURIComponent(naverQuery) + '&appname=com.ghimmy.koreatrip';
+    var naverUrl = 'https://m.map.naver.com/search2/search.naver?query=' + encodeURIComponent(naverQuery);
     html +=
       '<div class="activity-card">' +
         '<div class="activity-card-header">' +
@@ -1358,7 +1358,7 @@ function renderDayContent(idx) {
         '<div class="btn-row">' +
           '<a class="action-btn btn-apple" href="https://maps.apple.com/?q='+mq+'" target="_blank">🗺️ Apple</a>' +
           '<a class="action-btn btn-google" href="https://maps.google.com/maps?daddr='+mq+'" target="_blank">📍 Google</a>' +
-          '<a class="action-btn btn-naver" href="nmap://search?query='+encodeURIComponent(d.naverQuery || d.hotel)+'&appname=com.ghimmy.koreatrip" target="_blank">🟢 Naver</a>' +
+          '<a class="action-btn btn-naver" href="https://m.map.naver.com/search2/search.naver?query='+encodeURIComponent(d.naverQuery)+'" target="_blank">🟢 Naver</a>' +
         '</div>' +
       '</div>' +
     '</div></div>'
