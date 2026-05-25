@@ -1,9 +1,9 @@
-// Jeju Family Adventure PWA — v1
-const CACHE = 'jeju-trip-v1';
+// Jeju Family Adventure PWA — v2
+const CACHE = 'jeju-trip-v2';
 const STATIC = [
-  '/travel-app/manifest.json',
-  '/travel-app/icon-192.png',
-  '/travel-app/icon-512.png',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
 ];
 
 self.addEventListener('install', function(e) {
@@ -23,14 +23,6 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
-  var url = new URL(e.request.url);
-  if (url.pathname === '/travel-app/' || url.pathname === '/travel-app/index.html') {
-    e.respondWith(
-      fetch(e.request, { cache: 'no-store' })
-        .catch(function() { return caches.match('/travel-app/index.html'); })
-    );
-    return;
-  }
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       if (cached) return cached;
@@ -39,7 +31,7 @@ self.addEventListener('fetch', function(e) {
         var clone = res.clone();
         caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
         return res;
-      });
+      }).catch(function() { return cached; });
     })
   );
 });
