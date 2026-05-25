@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Jeju Family Adventure</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1565C0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Jeju Trip">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --blue:      #1565C0;
+  --blue-mid:  #1976D2;
+  --blue-lt:   #42A5F5;
+  --sky:       #E3F2FD;
+  --teal:      #00897B;
+  --coral:     #EF5350;
+  --amber:     #FFA000;
+  --green:     #43A047;
+  --purple:    #7E57C2;
+  --white:     #FFFFFF;
+  --cream:     #F5F9FF;
+  --text:      #1a2340;
+  --text-mid:  #3d5a80;
+  --safe-top:  env(safe-area-inset-top, 0px);
+  --safe-bot:  env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; width: 100%; overflow: hidden; background: var(--blue); font-family: 'DM Sans', sans-serif; color: var(--text); }
+
+/* ─── SPLASH ─── */
+#splash {
+  position: fixed; inset: 0; z-index: 1000;
+  background: linear-gradient(160deg, #0D47A1 0%, #1565C0 50%, #1976D2 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.8s ease;
+}
+#splash.fade-out { opacity: 0; pointer-events: none; }
+
+.splash-plane {
+  font-size: 72px; margin-bottom: 8px;
+  animation: flyIn 1s cubic-bezier(.34,1.56,.64,1) both;
+  display: inline-block;
+}
+@keyframes flyIn {
+  from { transform: translate(-80px, 40px) scale(0.5) rotate(-20deg); opacity: 0; }
+  to   { transform: translate(0,0) scale(1) rotate(0deg); opacity: 1; }
+}
+.splash-title {
+  font-family: 'Nunito', sans-serif; font-size: 30px; font-weight: 900;
+  color: white; text-align: center; margin-bottom: 4px;
+  animation: fadeUp 0.7s 0.5s both;
+}
+.splash-dest {
+  font-size: 16px; color: rgba(255,255,255,0.7); letter-spacing: 3px;
+  text-transform: uppercase; text-align: center; margin-bottom: 8px;
+  animation: fadeUp 0.7s 0.7s both;
+}
+.splash-dates {
+  font-size: 14px; color: rgba(255,255,255,0.5); text-align: center; margin-bottom: 28px;
+  animation: fadeUp 0.7s 0.85s both;
+}
+.splash-crew {
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+  animation: fadeUp 0.7s 1s both;
+}
+.splash-badge {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px; padding: 6px 14px; font-size: 12px; color: rgba(255,255,255,0.85);
+}
+.splash-dots { margin-top: 40px; display: flex; gap: 7px; animation: fadeUp 0.7s 1.3s both; }
+.splash-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.3); animation: pulse 1.4s infinite; }
+.splash-dot:nth-child(2) { animation-delay: 0.2s; } .splash-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse { 0%,100%{opacity:.3;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+/* ─── APP SHELL ─── */
+#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--cream); opacity: 0; transition: opacity 0.5s ease 0.3s; }
+#app.visible { opacity: 1; }
+
+/* ─── HEADER ─── */
+#header {
+  background: linear-gradient(135deg, #0D47A1 0%, #1565C0 60%, #1976D2 100%);
+  padding: calc(var(--safe-top) + 14px) 16px 14px; flex-shrink: 0; position: relative; overflow: hidden;
+}
+#header::before {
+  content:''; position:absolute; top:-60px; right:-60px; width:200px; height:200px; border-radius:50%;
+  background: radial-gradient(circle, rgba(66,165,245,0.2) 0%, transparent 70%);
+}
+.header-inner { position: relative; z-index: 1; }
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.header-left { display: flex; align-items: center; gap: 8px; }
+.header-plane { font-size: 28px; }
+.header-title { font-family: 'Nunito', sans-serif; font-size: 20px; font-weight: 900; color: white; line-height: 1; }
+.header-sub { font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 2px; text-transform: uppercase; }
+.header-flag { font-size: 22px; }
+
+/* Zone pill */
+.zone-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(255,255,255,0.12); border-radius: 20px;
+  padding: 3px 10px; font-size: 11px; color: rgba(255,255,255,0.7);
+  letter-spacing: 0.5px; margin-bottom: 10px;
+}
+
+/* Day strip */
+.day-strip { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; scroll-snap-type: x mandatory; }
+.day-strip::-webkit-scrollbar { display: none; }
+.day-chip {
+  flex-shrink: 0; scroll-snap-align: start;
+  background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 14px; padding: 7px 12px; cursor: pointer;
+  touch-action: manipulation; user-select: none; transition: all 0.2s; text-align: center; min-width: 56px;
+}
+.day-chip.active { background: white; border-color: white; }
+.day-chip-label { font-size: 9px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; display: block; }
+.day-chip.active .day-chip-label { color: var(--blue); }
+.day-chip-num { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900; color: white; display: block; line-height: 1.1; }
+.day-chip.active .day-chip-num { color: var(--blue); }
+.day-chip-dow { font-size: 9px; color: rgba(255,255,255,0.4); display: block; }
+.day-chip.active .day-chip-dow { color: var(--blue-mid); }
+
+/* ─── CONTENT ─── */
+#content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding-bottom: calc(var(--safe-bot) + 80px); }
+
+/* ─── DAY HERO ─── */
+.day-hero {
+  background: linear-gradient(150deg, #0D47A1 0%, #1565C0 55%, #1976D2 100%);
+  padding: 22px 18px 20px; position: relative; overflow: hidden;
+}
+.day-hero::after {
+  content: ''; position: absolute; bottom: -25px; right: -25px;
+  width: 100px; height: 100px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.08);
+}
+.hero-row { display: flex; align-items: flex-start; justify-content: space-between; }
+.hero-left { flex: 1; }
+.hero-day { font-size: 10px; color: var(--blue-lt); letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 3px; }
+.hero-dest { font-family: 'Nunito', sans-serif; font-size: 26px; font-weight: 900; color: white; line-height: 1.1; margin-bottom: 4px; }
+.hero-date { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+.hero-zone {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px; padding: 5px 12px; font-size: 12px; color: rgba(255,255,255,0.8);
+}
+.hero-emoji { font-size: 38px; align-self: center; margin-left: 10px; }
+
+/* ─── SECTION CARDS ─── */
+.section-card { margin: 10px 14px 0; background: white; border-radius: 18px; overflow: hidden; box-shadow: 0 2px 12px rgba(21,101,192,0.08); }
+.section-header {
+  display: flex; align-items: center; gap: 10px; padding: 13px 15px;
+  cursor: pointer; touch-action: manipulation; user-select: none; background: white; transition: background 0.15s;
+}
+.section-header:active { background: #f0f6ff; }
+.section-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.si-hotel  { background: linear-gradient(135deg,#E3F2FD,#BBDEFB); }
+.si-todo   { background: linear-gradient(135deg,#FFF3E0,#FFE0B2); }
+.si-opt    { background: linear-gradient(135deg,#EDE7F6,#D1C4E9); }
+.si-food   { background: linear-gradient(135deg,#E8F5E9,#C8E6C9); }
+.section-label { flex: 1; font-size: 12px; font-weight: 600; color: var(--text-mid); text-transform: uppercase; letter-spacing: 1.2px; }
+.section-caret { font-size: 10px; color: #ccc; transition: transform 0.25s; }
+.section-card.open .section-caret { transform: rotate(180deg); }
+.section-body { max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1); }
+.section-card.open .section-body { max-height: 4000px; border-top: 1px solid #f0f4ff; }
+
+/* Hotel */
+.hotel-block { padding: 15px; }
+.hotel-name { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 5px; }
+.hotel-addr { font-size: 12px; color: #999; line-height: 1.5; margin-bottom: 14px; }
+.btn-row { display: flex; gap: 8px; }
+.action-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
+  padding: 10px 10px; border-radius: 12px; border: none; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 500; cursor: pointer; touch-action: manipulation; user-select: none;
+  text-decoration: none; transition: transform 0.15s, opacity 0.15s;
+}
+.action-btn:active { transform: scale(0.96); opacity: 0.85; }
+.btn-apple { background: var(--blue); color: white; }
+.btn-google { background: var(--amber); color: #3E2000; }
+
+/* Todo list */
+.todo-list { padding: 10px 15px 14px; }
+.todo-item { display: flex; align-items: flex-start; gap: 11px; padding: 10px 0; border-bottom: 1px solid #f5f7ff; }
+.todo-item:last-child { border-bottom: none; }
+.todo-num { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
+.todo-num.main { background: var(--blue); color: white; }
+.todo-num.opt  { background: #EDE7F6; color: #7E57C2; }
+.todo-text { font-size: 14px; line-height: 1.55; color: var(--text); }
+
+/* Restaurant */
+.rest-block { padding: 15px; }
+.rest-name { font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 5px; }
+.rest-addr { font-size: 12px; color: #999; line-height: 1.5; margin-bottom: 14px; }
+
+/* ─── RICH ACTIVITY CARDS ─── */
+.activity-list { padding: 10px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+.activity-card {
+  border-radius: 14px; border: 1px solid #EEF2FF; overflow: hidden;
+  background: #FAFBFF;
+}
+.activity-card-header {
+  display: flex; align-items: center; gap: 10px; padding: 12px 13px 10px;
+}
+.activity-emoji { font-size: 22px; flex-shrink: 0; }
+.activity-name-wrap { flex: 1; }
+.activity-name { font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 800; color: var(--text); line-height: 1.2; }
+.activity-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.3px;
+  padding: 2px 8px; border-radius: 20px;
+}
+.badge-baby    { background: #E3F2FD; color: #1565C0; }
+.badge-elderly { background: #FFF3E0; color: #E65100; }
+.badge-active  { background: #E8F5E9; color: #2E7D32; }
+.badge-opt     { background: #F3E5F5; color: #6A1B9A; }
+.activity-desc {
+  font-size: 13px; line-height: 1.6; color: #555;
+  padding: 0 13px 10px; border-top: 1px solid #EEF2FF; padding-top: 9px;
+}
+.activity-addr {
+  font-size: 11px; color: #aaa; line-height: 1.5;
+  padding: 0 13px 10px;
+}
+.activity-map-btn {
+  display: flex; align-items: center; gap: 6px;
+  margin: 0 13px 12px;
+  background: var(--blue); color: white;
+  border-radius: 10px; padding: 8px 12px;
+  font-size: 12px; font-weight: 600; text-decoration: none;
+  touch-action: manipulation; width: fit-content;
+  transition: opacity 0.15s;
+}
+.activity-map-btn:active { opacity: 0.8; }
+.activity-map-btn.green { background: var(--teal); }
+
+/* Rich restaurant card */
+.rest-rich { padding: 14px; }
+.rest-rich-name { font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 3px; }
+.rest-cuisine { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.rest-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 10px; }
+.rest-order-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--teal); margin-bottom: 6px; }
+.rest-order-items { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.rest-order-pill { background: #E0F2F1; color: #00695C; border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 500; }
+.rest-addr-row { font-size: 12px; color: #aaa; margin-bottom: 12px; line-height: 1.5; }
+
+/* ─── RESTAURANT SECTION ─── */
+.meal-tabs {
+  display: flex; gap: 0; padding: 12px 14px 0;
+}
+.meal-tab {
+  flex: 1; padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 700;
+  color: #bbb; border-bottom: 2px solid #eee; cursor: pointer;
+  touch-action: manipulation; user-select: none; transition: all 0.2s; letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.meal-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+.meal-panel { display: none; padding: 10px 14px 14px; }
+.meal-panel.active { display: flex; flex-direction: column; gap: 10px; }
+
+/* AI recommended restaurant card */
+.rcard {
+  border-radius: 14px; border: 1.5px solid #E8F0FE; overflow: hidden;
+  background: white; box-shadow: 0 1px 6px rgba(21,101,192,0.06);
+}
+.rcard.friends {
+  border-color: #FFD54F; background: #FFFDE7;
+  box-shadow: 0 1px 8px rgba(255,193,7,0.15);
+}
+
+.rcard-header { padding: 12px 13px 8px; display: flex; align-items: flex-start; gap: 10px; }
+.rcard-emoji { font-size: 26px; flex-shrink: 0; margin-top: 1px; }
+.rcard-meta { flex: 1; }
+.rcard-name { font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800; color: var(--text); line-height: 1.2; margin-bottom: 3px; }
+.rcard-cuisine { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+.rcard-source {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700; padding: 2px 9px; border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+.rcard-source.ai { background: #EDE7F6; color: #6A1B9A; }
+.rcard-source.friends { background: #FFF8E1; color: #E65100; border: 1px solid #FFD54F; }
+
+.rcard-desc { font-size: 13px; color: #555; line-height: 1.6; padding: 0 13px 10px; border-top: 1px solid #f0f0f0; padding-top: 9px; }
+.rcard.friends .rcard-desc { border-top-color: #FFE082; }
+
+.rcard-dishes-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--teal); margin: 0 13px 6px; }
+.rcard-dishes { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 13px 10px; }
+.rcard-dish { background: #E0F2F1; color: #00695C; border-radius: 20px; padding: 4px 10px; font-size: 12px; font-weight: 500; }
+.rcard.friends .rcard-dish { background: #FFF3E0; color: #BF360C; }
+
+.rcard-addr { font-size: 11px; color: #bbb; padding: 0 13px 8px; }
+.rcard-btns { display: flex; gap: 7px; padding: 0 13px 13px; flex-wrap: wrap; }
+.rcard-map-btn {
+  display: flex; align-items: center; gap: 5px; border-radius: 10px;
+  padding: 7px 12px; font-size: 12px; font-weight: 600; text-decoration: none;
+  touch-action: manipulation; transition: opacity 0.15s; flex-shrink: 0;
+}
+.rcard-map-btn:active { opacity: 0.8; }
+.rcard-map-btn.apple { background: var(--blue); color: white; }
+.rcard-map-btn.google { background: var(--teal); color: white; }
+.rcard-map-btn.naver { background: #03C75A; color: white; }
+.activity-map-btn.naver { background: #03C75A; }
+.action-btn.btn-naver { background: #03C75A; color: white; }
+
+/* Tips banner */
+.tips-banner {
+  margin: 10px 14px 0; border-radius: 16px; padding: 14px 15px;
+  background: linear-gradient(135deg, #FFF8E1, #FFF3CD);
+  border: 1px solid rgba(255,160,0,0.2);
+}
+.tips-title { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--amber); font-weight: 700; margin-bottom: 9px; }
+.tips-pills { display: flex; gap: 7px; flex-wrap: wrap; }
+.tip-pill { background: white; border: 1px solid #ffe0a0; border-radius: 20px; padding: 5px 11px; font-size: 12px; color: #555; display: flex; align-items: center; gap: 4px; }
+
+/* Flight day */
+.flight-card {
+  margin: 10px 14px; border-radius: 18px; overflow: hidden;
+  background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+  border: 1px solid rgba(67,160,71,0.2); padding: 22px 18px; text-align: center;
+}
+.flight-plane { font-size: 48px; margin-bottom: 8px; animation: bob 2s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+.flight-title { font-family: 'Nunito', sans-serif; font-size: 22px; font-weight: 900; color: #2E7D32; margin-bottom: 4px; }
+.flight-sub { font-size: 14px; color: #43A047; }
+.flight-badges { display: flex; gap: 8px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+.flight-badge { background: white; border-radius: 20px; padding: 6px 14px; font-size: 12px; color: #43A047; font-weight: 500; }
+
+/* ─── OVERVIEW SCREEN ─── */
+.overview-hero {
+  background: linear-gradient(155deg, #0D47A1 0%, #1565C0 100%);
+  padding: calc(var(--safe-top) + 18px) 18px 22px; flex-shrink: 0; position: relative; overflow: hidden;
+}
+.overview-hero::before {
+  content:''; position:absolute; top:-50px; right:-50px; width:160px; height:160px; border-radius:50%;
+  background: radial-gradient(circle, rgba(66,165,245,0.2) 0%, transparent 70%);
+}
+.ov-title { font-family: 'Nunito', sans-serif; font-size: 26px; font-weight: 900; color: white; margin-bottom: 3px; }
+.ov-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+.ov-crew { display: flex; gap: 7px; flex-wrap: wrap; }
+.crew-badge { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 5px 11px; font-size: 12px; color: rgba(255,255,255,0.8); }
+
+.ov-list { padding: 10px 14px; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 90px; }
+.ov-card {
+  background: white; border-radius: 16px; margin-bottom: 8px; overflow: hidden;
+  box-shadow: 0 2px 10px rgba(21,101,192,0.07); display: flex; align-items: stretch;
+  cursor: pointer; touch-action: manipulation; user-select: none; transition: transform 0.15s;
+}
+.ov-card:active { transform: scale(0.985); }
+.ov-stripe { width: 5px; flex-shrink: 0; }
+.ov-inner { padding: 12px 12px 12px 11px; flex: 1; }
+.ov-meta { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
+.ov-day-num { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--blue-mid); text-transform: uppercase; }
+.ov-date { font-size: 10px; color: #bbb; }
+.ov-dest { font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 2px; }
+.ov-hotel { font-size: 11px; color: #aaa; }
+.ov-zone-dot { width: 7px; height: 7px; border-radius: 50%; margin-left: auto; flex-shrink: 0; align-self: center; margin-right: 2px; }
+.ov-arrow { display: flex; align-items: center; padding: 0 13px 0 0; font-size: 14px; color: #ddd; }
+
+/* ─── PACKING ─── */
+.pack-hero {
+  background: linear-gradient(155deg, #0D47A1 0%, #1565C0 100%);
+  padding: calc(var(--safe-top) + 18px) 18px 22px; flex-shrink: 0;
+}
+.pack-title { font-family: 'Nunito', sans-serif; font-size: 24px; font-weight: 900; color: white; margin-bottom: 3px; }
+.pack-sub { font-size: 12px; color: rgba(255,255,255,0.5); }
+.pack-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 10px 14px calc(var(--safe-bot) + 80px); }
+.pack-cat { background: white; border-radius: 16px; margin-bottom: 9px; overflow: hidden; box-shadow: 0 2px 10px rgba(21,101,192,0.07); }
+.pack-cat-hdr {
+  display: flex; align-items: center; gap: 10px; padding: 13px 15px;
+  cursor: pointer; touch-action: manipulation; user-select: none; background: white;
+}
+.pack-cat-icon { font-size: 22px; }
+.pack-cat-name { font-size: 14px; font-weight: 700; color: var(--text); flex: 1; }
+.pack-cat-count { font-size: 11px; color: #bbb; }
+.pack-cat-caret { font-size: 10px; color: #ddd; transition: transform 0.25s; }
+.pack-cat.open .pack-cat-caret { transform: rotate(180deg); }
+.pack-items-body { max-height: 0; overflow: hidden; transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1); border-top: 0 solid transparent; }
+.pack-cat.open .pack-items-body { max-height: 900px; border-top: 1px solid #f0f4ff; }
+.pack-item {
+  display: flex; align-items: center; gap: 12px; padding: 11px 15px;
+  border-bottom: 1px solid #f8f8f8; cursor: pointer; touch-action: manipulation; user-select: none;
+}
+.pack-item:last-child { border-bottom: none; }
+.pack-check {
+  width: 22px; height: 22px; border-radius: 6px; border: 2px solid #ddd; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 12px; color: transparent;
+}
+.pack-item.checked .pack-check { background: var(--teal); border-color: var(--teal); color: white; }
+.pack-item-text { font-size: 13px; color: var(--text); transition: color 0.2s; flex: 1; }
+.pack-item.checked .pack-item-text { color: #ccc; text-decoration: line-through; }
+.pack-item-tag { font-size: 10px; color: var(--blue-mid); background: var(--sky); border-radius: 6px; padding: 2px 7px; flex-shrink: 0; }
+
+/* ─── BOTTOM NAV ─── */
+#bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: white; border-top: 1px solid #eef2ff;
+  display: flex; padding: 8px 0 calc(var(--safe-bot) + 4px);
+  box-shadow: 0 -4px 20px rgba(21,101,192,0.07);
+}
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 5px 0; cursor: pointer; touch-action: manipulation; user-select: none; background: none; border: none; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+.nav-btn.active .nav-icon-wrap { background: var(--sky); border-radius: 12px; }
+.nav-btn.active .nav-label { color: var(--blue); font-weight: 600; }
+.nav-btn:not(.active) .nav-label { color: #ccc; }
+.nav-icon-wrap { padding: 4px 14px; transition: background 0.2s; }
+.nav-icon { font-size: 20px; display: block; }
+.nav-label { font-size: 10px; letter-spacing: 0.3px; }
+
+/* ─── SCREENS ─── */
+.screen { display: none; }
+.screen.active { display: flex; flex-direction: column; height: 100%; }
+.animate-in { animation: fadeUp 0.35s ease both; }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-plane">✈️</div>
+  <div class="splash-title">Jeju Family Adventure</div>
+  <div class="splash-dest">제주도 · Jeju Island</div>
+  <div class="splash-dates">2 Jun – 9 Jun 2025</div>
+  <div class="splash-crew">
+    <span class="splash-badge">👨‍👩‍👧‍👦 4 Adults</span>
+    <span class="splash-badge">👴 Elderly</span>
+    <span class="splash-badge">👶 Baby</span>
+    <span class="splash-badge">🚗 Car Rental</span>
+  </div>
+  <div class="splash-dots">
+    <div class="splash-dot"></div><div class="splash-dot"></div><div class="splash-dot"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- ITINERARY SCREEN -->
+  <div id="screen-itinerary" class="screen active">
+    <div id="header">
+      <div class="header-inner">
+        <div class="header-top">
+          <div class="header-left">
+            <span class="header-plane">✈️</span>
+            <div>
+              <div class="header-title">Jeju Adventure</div>
+              <div class="header-sub">2–9 Jun 2025 · 🇰🇷</div>
+            </div>
+          </div>
+        </div>
+        <div class="day-strip" id="dayStrip"></div>
+      </div>
+    </div>
+    <div id="content"><div id="dayContent"></div></div>
+  </div>
+
+  <!-- OVERVIEW SCREEN -->
+  <div id="screen-overview" class="screen">
+    <div class="overview-hero">
+      <div class="ov-title">Full Trip Overview</div>
+      <div class="ov-sub">8 days in Jeju Island, South Korea 🇰🇷</div>
+      <div class="ov-crew">
+        <span class="crew-badge">👨‍👩‍👧‍👦 4 Adults</span>
+        <span class="crew-badge">👴 Elderly</span>
+        <span class="crew-badge">👶 Baby</span>
+        <span class="crew-badge">🚗 Car</span>
+      </div>
+    </div>
+    <div class="ov-list" id="overviewList"></div>
+  </div>
+
+  <!-- PACKING SCREEN -->
+  <div id="screen-packing" class="screen">
+    <div class="pack-hero">
+      <div class="pack-title">🧳 Packing List</div>
+      <div class="pack-sub">Tailored for Jeju weather & your crew</div>
+    </div>
+    <div class="pack-content" id="packingContent"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div id="bottom-nav">
+    <button class="nav-btn active" data-screen="itinerary">
+      <div class="nav-icon-wrap"><span class="nav-icon">🗓️</span></div>
+      <span class="nav-label">Itinerary</span>
+    </button>
+    <button class="nav-btn" data-screen="overview">
+      <div class="nav-icon-wrap"><span class="nav-icon">🗺️</span></div>
+      <span class="nav-label">Overview</span>
+    </button>
+    <button class="nav-btn" data-screen="packing">
+      <div class="nav-icon-wrap"><span class="nav-icon">🧳</span></div>
+      <span class="nav-label">Packing</span>
+    </button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  JEJU TRIP DATA
+// ═══════════════════════════════════════
+var TRIP = {
+  title: "Jeju Family Adventure",
+  days: [
+    // ─── DAY 1 ───
+    {
+      day: 1, date: "Tue, 2 Jun", dow: "Tue",
+      to: "Jeju South 🌊", zone: "south",
+      hotel: "Velum Resort 벨룸리조트",
+      hotelAddress: "45, 516-ro 277beon-gil, Seogwipo-si, Jeju-do, South Korea 63580",
+      thingsToDo: [
+        {
+          emoji: "🌊",
+          name: "Seogwipo Coastal Stroll",
+          desc: "Seogwipo is Jeju's second city, sitting on dramatic southern cliffs with sea views in every direction. Take a gentle evening walk along the seafront promenade to shake off the journey — the air is fresh and the views are spectacular. Plenty of flat paved paths make it easy for the whole family.",
+          tags: ["baby", "elderly"],
+          address: "Seogwipo-si, Jeju-do 63595, South Korea", mapQuery: "Seogwipo seafront promenade Jeju"
+        },
+        {
+          emoji: "💦",
+          name: "Cheonjiyeon Waterfall 천지연폭포",
+          desc: "One of Jeju's three great waterfalls, Cheonjiyeon drops 22 metres into a beautiful emerald pool below. A short, well-paved 550m walkway through a lush subtropical forest leads to the falls — the path is smooth and well-lit, making it ideal for strollers and elderly visitors. Magical when visited in the evening.",
+          tags: ["baby", "elderly"],
+          address: "864-1 Cheonjeyeon-ro, Seogwipo-si, Jeju-do 63598, South Korea", mapQuery: "천지연폭포 Cheonjiyeon Waterfall Seogwipo Jeju"
+        },
+        {
+          emoji: "🛍️",
+          name: "Seogwipo Maeil Olle Market 서귀포매일올레시장",
+          desc: "A lively traditional market open every day in the heart of Seogwipo. Browse stalls selling fresh Jeju tangerines, black pork, seafood and street snacks. It's compact and covered, making it comfortable even if it's warm. A great gentle introduction to Jeju food culture on arrival evening.",
+          tags: ["baby", "elderly"],
+          address: "18 Jungjeong-ro, Seogwipo-si, Jeju-do 63595, South Korea", mapQuery: "서귀포매일올레시장 Seogwipo Olle Market"
+        }
+      ],
+      optionalThingsToDo: [],
+      restaurant: null,
+      tips: ["Take it slow today — you've just arrived!", "The resort is close to Seogwipo town, so everything is within easy reach"],
+      restaurants: {
+        breakfast: [
+          { source:"ai", emoji:"☕", name:"Cafe Poong-gyeong 풍경카페", cuisine:"Korean Café · Breakfast",
+            desc:"A scenic hilltop café near Seogwipo with sweeping ocean views. Fresh toast sets, eggs, freshly squeezed Jeju tangerine juice and good coffee. A gentle start to your Jeju adventure — baby-friendly with highchairs.",
+            dishes:["Jeju Tangerine Juice 귤주스","French Toast Set 토스트세트","Americano"],
+            address:"Seogwipo-si, Jeju-do 63595, South Korea", mapQuery:"풍경카페 Cafe Poonggyeong Seogwipo Jeju" },
+          { source:"ai", emoji:"🍚", name:"Haenyeo Kitchen 해녀주방", cuisine:"Korean · Traditional",
+            desc:"A simple local spot serving traditional Korean breakfast — steaming rice, doenjang jjigae, fresh banchan and grilled fish. Popular with locals and great value — a genuine taste of Korean morning dining.",
+            dishes:["Doenjang Jjigae 된장찌개","Grilled Mackerel 고등어구이","Rice + Banchan 반찬"],
+            address:"Seogwipo-si, Jeju-do 63595, South Korea", mapQuery:"Korean breakfast restaurant Seogwipo Jeju" },
+          { source:"ai", emoji:"🥐", name:"Cafe Monsant 몬상카페", cuisine:"Bakery Café",
+            desc:"A beloved Seogwipo bakery café serving freshly baked pastries, croissants and sandwiches. Cosy indoor seating and garden terrace. A lighter Western-style option. Stroller accessible.",
+            dishes:["Croissant Sandwich","Jeju Tangerine Cake 귤케이크","Flat White"],
+            address:"Seogwipo-si, Jeju-do 63595, South Korea", mapQuery:"몬상카페 Cafe Monsant bakery Seogwipo" }
+        ],
+        dinner: [
+          { source:"ai", emoji:"🐟", name:"Olle Sikdang 올레식당", cuisine:"Korean · Seafood",
+            desc:"A well-regarded Seogwipo restaurant known for its galchi jorim — braised hairtail fish in rich spicy sauce, a true Jeju signature dish. Family-style sharing portions, perfect with rice and kimchi.",
+            dishes:["Galchi Jorim 갈치조림","Grilled Galchi 갈치구이","Miyeok Guk 미역국"],
+            address:"Seogwipo-si, Jeju-do 63595, South Korea", mapQuery:"갈치조림 galchi jorim Seogwipo Jeju" },
+          { source:"ai", emoji:"🥩", name:"Heukdwaeji Alley 흑돼지 거리", cuisine:"Korean BBQ · Black Pork",
+            desc:"Seogwipo's own black pork BBQ strip — a row of charcoal grill restaurants where you cook thick-cut Jeju black pork at the table. Order samgyeopsal or moksal, wrap in lettuce with garlic and ssamjang.",
+            dishes:["Black Pork Samgyeopsal 흑돼지삼겹살","Grilled Garlic 마늘구이","Doenjang Jjigae 된장찌개"],
+            address:"Donggwang-ro, Seogwipo-si, Jeju-do 63594, South Korea (흑돼지거리)", mapQuery:"흑돼지거리 Heukdwaeji black pork street Seogwipo" },
+          { source:"ai", emoji:"🍜", name:"Jeju Ramen House 제주라면", cuisine:"Korean · Ramen",
+            desc:"A casual family-friendly ramen shop in Seogwipo — perfect for a light meal after a long travel day. Warm broths, soft noodles and simple Korean sides. Relaxed, no-fuss dining for all ages.",
+            dishes:["Jeju Seafood Ramen 해물라면","Kimchi Jjigae 김치찌개","Fried Dumplings 군만두"],
+            address:"Seogwipo-si, Jeju-do 63595, South Korea", mapQuery:"라면 ramen restaurant Seogwipo Jeju" }
+        ]
+      }
+    },
+    // ─── DAY 2 ───
+    {
+      day: 2, date: "Wed, 3 Jun", dow: "Wed",
+      to: "South Coast 🌿", zone: "south",
+      hotel: "Velum Resort 벨룸리조트",
+      hotelAddress: "45, 516-ro 277beon-gil, Seogwipo-si, Jeju-do, South Korea 63580",
+      thingsToDo: [
+        {
+          emoji: "🪨",
+          name: "Daepo Jusangjeolli Cliff 대포주상절리",
+          desc: "A breathtaking stretch of coastline where perfectly hexagonal basalt columns rise straight from the crashing sea — formed by lava meeting ocean 250,000 years ago. The viewing platform is flat and paved, right at sea level. The spray and roar of the waves is dramatic. Easy 10-minute walk from the car park.",
+          tags: ["baby", "elderly"],
+          address: "36-30 Ieodo-ro, Seogwipo-si, Jeju-do 63562, South Korea", mapQuery: "대포주상절리 Daepo Jusangjeolli Cliff Jeju"
+        },
+        {
+          emoji: "🌊",
+          name: "Jeongbang Waterfall 정방폭포",
+          desc: "One of the very few waterfalls in Asia that falls directly into the sea — 23 metres of cascading water plunging straight into the ocean. The path down involves about 100 steps, so it may be challenging for the elderly visitor, but the view from the top is still stunning. Baby carrier recommended on the descent.",
+          tags: ["baby"],
+          address: "37 Chilsimni-ro214beon-gil, Seogwipo-si, Jeju-do 63594, South Korea", mapQuery: "정방폭포 Jeongbang Waterfall Seogwipo"
+        },
+        {
+          emoji: "🏔️",
+          name: "Yongmeori Coast & Sanbangsan 용머리해안",
+          desc: "Yongmeori (Dragon Head Coast) is a dramatic eroded cliff walk hugging the coastline at the foot of Sanbangsan mountain. The coastal path can be closed during high tide or bad weather, so check conditions before visiting. The walk is on uneven rock so it can be slippery — elderly visitors may prefer to view from the top. Sanbangsan itself has a small cave temple cut into the cliffs.",
+          tags: ["baby"],
+          address: "112-3 Sanbang-ro, Andeok-myeon, Seogwipo-si, Jeju-do 63530, South Korea", mapQuery: "용머리해안 Yongmeori Coast Sanbangsan Jeju"
+        },
+        {
+          emoji: "🍵",
+          name: "Osulloc Tea Museum 오설록 티 뮤지엄",
+          desc: "Korea's most famous tea brand set amongst rolling green tea fields. The museum is modern, air-conditioned and free to enter. Step outside to walk between the perfectly manicured rows of tea plants stretching to the horizon — a stunning and very photogenic landscape. The cafe inside serves matcha ice cream, tea lattes and green tea roll cake. Completely flat and stroller-friendly.",
+          tags: ["baby", "elderly"],
+          address: "15 Sinhwayeoksa-ro, Andeok-myeon, Seogwipo-si, Jeju-do 63534, South Korea", mapQuery: "오설록 티뮤지엄 Osulloc Tea Museum Jeju"
+        }
+      ],
+      optionalThingsToDo: [
+        {
+          emoji: "🌸",
+          name: "Camellia Hill 카멜리아힐",
+          desc: "A beautifully landscaped private garden estate with over 500 varieties of camellia trees from 45 countries. The paths are wide, paved and gently sloping — perfect for strollers and comfortable for elderly. In June the green is lush and peaceful. Highly recommended if you have an hour to spare.",
+          tags: ["baby", "elderly"],
+          address: "166 Byeonsosoro, Andeok-myeon, Seogwipo-si, Jeju-do 63534, South Korea", mapQuery: "카멜리아힐 Camellia Hill Andeok Jeju"
+        },
+        {
+          emoji: "🗿",
+          name: "Bonte Museum (Father's Garden) 본태박물관",
+          desc: "An architecturally stunning museum designed by legendary Japanese architect Tadao Ando, set in a landscape garden. Houses traditional Korean folk art alongside modern art by Kusama and others. The outdoor sculpture garden is peaceful and uncrowded. Worth a visit if the family enjoys art and architecture.",
+          tags: ["elderly"],
+          address: "37 Sinhwayeoksa-ro, Andeok-myeon, Seogwipo-si, Jeju-do 63533, South Korea", mapQuery: "본태박물관 Bonte Museum Jeju"
+        },
+        {
+          emoji: "🎠",
+          name: "Saebyeol Friends Village 새별오름 근처",
+          desc: "A quirky little themed village with cartoon characters and colourful scenes — the kind of place that delights young children and makes for fun family photos. Low-key and relaxed, good for when the baby needs a change of pace from nature walks.",
+          tags: ["baby"],
+          address: "Andeok-myeon, Seogwipo-si, Jeju-do, South Korea", mapQuery: "Saebyeol Friends Village Andeok Jeju"
+        }
+      ],
+      restaurant: null,
+      tips: ["Yongmeori can close due to tides — check Google before driving there", "Osulloc green tea ice cream is not to be missed!"],
+      restaurants: {
+        breakfast: [
+          { source:"ai", emoji:"🍳", name:"Seogwipo Morning Table 서귀포아침", cuisine:"Korean · Breakfast",
+            desc:"Start the day right at this local favourite near the resort, known for its hearty Korean breakfast sets: soft tofu jjigae, rice, pickled vegetables and a perfectly fried egg. Filling fuel for a big day of coastal sights.",
+            dishes:["Sundubu Jjigae 순두부찌개","Fried Egg Rice Bowl 계란밥","Barley Tea 보리차"],
+            address:"Seogwipo-si, Jeju-do 63595, South Korea", mapQuery:"Korean breakfast Seogwipo Jeju morning" },
+          { source:"ai", emoji:"🥞", name:"Jeju Slow Kitchen 슬로우키친", cuisine:"Brunch Café",
+            desc:"A popular Jeju brunch spot serving fluffy ricotta pancakes, avocado toast and Jeju citrus smoothies. Lovely outdoor seating. Good for the family before heading to the south coast — arrive early as it fills up by 10am.",
+            dishes:["Ricotta Pancakes 리코타팬케이크","Avocado Toast","Hallabong Smoothie 한라봉스무디"],
+            address:"Seogwipo-si, Jeju-do 63595, South Korea", mapQuery:"Jeju Slow Kitchen brunch cafe Seogwipo" },
+          { source:"ai", emoji:"🍞", name:"Osulloc Innisfree Jeju House", cuisine:"Café · Tea & Bakes",
+            desc:"As you head toward Osulloc Tea Museum, stop at the adjacent Jeju House café for matcha lattes, green tea cakes and fresh bakes. Part of the same estate — stunning tea field views while you eat.",
+            dishes:["Matcha Latte 말차라떼","Green Tea Roll Cake 녹차롤케이크","Jeju Earl Grey"],
+            address:"15 Sinhwayeoksa-ro, Andeok-myeon, Seogwipo-si, Jeju-do 63534, South Korea", mapQuery:"Innisfree Jeju House cafe Osulloc 제주하우스" }
+        ],
+        lunch: [
+          { source:"ai", emoji:"🍱", name:"Gwaneumsa Temple Food 관음사", cuisine:"Korean · Temple Cuisine",
+            desc:"Near the south coast sights, this serene spot serves traditional Korean temple food — vegetarian, deeply nourishing and beautifully presented. No meat, no garlic, just clean fermented flavours. A unique cultural dining experience, very gentle on elderly digestion.",
+            dishes:["Temple Bibimbap 사찰비빔밥","Wild Greens Soup 산나물국","Fermented Tofu 두부장아찌"],
+            address:"Andeok-myeon, Seogwipo-si, Jeju-do, South Korea", mapQuery:"사찰음식 Korean temple food Andeok Jeju" },
+          { source:"ai", emoji:"🐙", name:"Coastal Haenyeo Stall 해녀집", cuisine:"Korean · Fresh Seafood",
+            desc:"A haenyeo-run roadside stall along the south coast where divers sell what they caught that morning — raw sea urchin, abalone, conch and turban shells. Eat it fresh with a squeeze of lemon right at the seafront. Unmissable Jeju experience.",
+            dishes:["Sea Urchin 성게","Fresh Abalone 전복","Conch 소라"],
+            address:"Daejeong-eup, Seogwipo-si, Jeju-do, South Korea (남부해안 해녀집)", mapQuery:"해녀집 haenyeo seafood stall south coast Jeju" },
+          { source:"ai", emoji:"🍔", name:"Cafe & Restaurant at Osulloc", cuisine:"Light Meals & Café",
+            desc:"The in-house restaurant at Osulloc Tea Museum serves green tea noodles, light bento boxes and refreshing cold tea drinks. A convenient, comfortable lunch stop that the whole family including baby and elderly will enjoy — all on flat ground.",
+            dishes:["Green Tea Noodles 녹차소바","Jeju Bento Box 제주도시락","Iced Matcha Latte 아이스말차"],
+            address:"15 Sinhwayeoksa-ro, Andeok-myeon, Seogwipo-si, Jeju-do 63534, South Korea", mapQuery:"오설록 Osulloc Tea Museum restaurant cafe Jeju" }
+        ],
+        dinner: [
+          { source:"ai", emoji:"🦑", name:"Jeju Haemul Chon 제주해물촌", cuisine:"Korean · Seafood",
+            desc:"A large and lively seafood restaurant in Seogwipo city serving haemul pajeon (seafood pancake), spicy octopus stir-fry and raw fish platters. Family-friendly tables, loud and buzzy atmosphere. A great evening out.",
+            dishes:["Haemul Pajeon 해물파전","Spicy Octopus 낙지볶음","Mixed Sashimi 모둠회"],
+            address:"Seogwipo-si, Jeju-do 63595, South Korea", mapQuery:"해물촌 haemul seafood restaurant Seogwipo Jeju" },
+          { source:"ai", emoji:"🍲", name:"Halmang Guksu 할망국수", cuisine:"Korean · Noodles",
+            desc:"A beloved local spot in Seogwipo specialising in Jeju-style guksu noodles in a milky pork bone broth — a Jeju island tradition unique to this area. Comforting, deeply flavourful and very affordable. Opens from 5pm.",
+            dishes:["Jeju Guksu 제주국수","Pork Bone Broth 돼지국밥","Kimchi Pancake 김치전"],
+            address:"Seogwipo-si, Jeju-do 63595, South Korea", mapQuery:"할망국수 Halmang Guksu noodle restaurant Seogwipo" },
+          { source:"ai", emoji:"🥘", name:"Hwaro Korean BBQ 화로구이", cuisine:"Korean BBQ",
+            desc:"A smart yet relaxed Korean BBQ restaurant in Seogwipo with table-side charcoal grills and premium cuts of pork and beef. Good ventilation and spacious seating — comfortable for the elderly and manageable with a baby in a carrier.",
+            dishes:["Chadolbaegi 차돌박이","Samgyeopsal 삼겹살","Egg Custard Side 계란찜"],
+            address:"Seogwipo-si, Jeju-do 63595, South Korea", mapQuery:"화로구이 Korean BBQ Hwaro Seogwipo Jeju" }
+        ]
+      }
+    },
+    // ─── DAY 3 ───
+    {
+      day: 3, date: "Thu, 4 Jun", dow: "Thu",
+      to: "East Coast 🐠", zone: "south",
+      hotel: "Velum Resort 벨룸리조트",
+      hotelAddress: "45, 516-ro 277beon-gil, Seogwipo-si, Jeju-do, South Korea 63580",
+      thingsToDo: [
+        {
+          emoji: "🦈",
+          name: "Aqua Planet Jeju 아쿠아플라넷",
+          desc: "Korea's largest aquarium, home to whale sharks, manta rays, beluga whales and thousands of sea creatures. It's purpose-built for families — elevators throughout, dedicated nursing rooms, wide pushchair-friendly corridors and a dolphin performance arena. Babies and toddlers are completely mesmerised by the giant tanks. Allow 2–3 hours. Book tickets online in advance to skip queues.",
+          tags: ["baby", "elderly"],
+          address: "218 Haenyeobat-gil, Seongsan-eup, Seogwipo-si, Jeju-do 63644, South Korea", mapQuery: "아쿠아플라넷제주 Aqua Planet Seongsan Jeju"
+        },
+        {
+          emoji: "🌋",
+          name: "Seongsan Ilchulbong 성산일출봉",
+          desc: "A UNESCO World Heritage volcanic crater that erupted from the sea 100,000 years ago. The iconic cone-shaped peak is one of Jeju's most photographed landmarks. Reaching the crater rim involves 182 steep steps — elderly visitors are welcome to enjoy the spectacular views from the base and along the coastal boardwalk, which is flat and beautifully scenic. The baby carrier is recommended for the steps.",
+          tags: ["baby"],
+          address: "284-12 Seongsan-ri, Seongsan-eup, Seogwipo-si, Jeju-do 63642, South Korea", mapQuery: "성산일출봉 Seongsan Ilchulbong Jeju"
+        },
+        {
+          emoji: "🏘️",
+          name: "Seongeup Folk Village 성읍민속마을",
+          desc: "A living traditional village where families have resided for centuries inside original Jeju stone walls and thatched-roof houses. It's a fascinating step back in time — you can walk freely between homes, see traditional haenyeo wells, Jeju ponies and ancient stone Harubang grandfather statues. Flat, open, and shaded by old trees. Informative guides are available.",
+          tags: ["baby", "elderly"],
+          address: "Seongeup-ri, Pyoseon-myeon, Seogwipo-si, Jeju-do 63641, South Korea", mapQuery: "성읍민속마을 Seongeup Folk Village Jeju"
+        }
+      ],
+      optionalThingsToDo: [],
+      restaurant: {
+        name: "Myeong Jin Jeon Bok 명진전복",
+        cuisine: "Korean · Abalone Speciality",
+        desc: "One of the most celebrated abalone restaurants on Jeju, located right on the coast road near Gimnyeong. They serve fresh Jeju abalone — haenyeo-caught — in porridge (죽), sashimi and grilled form. The abalone porridge is silky, nourishing and great for all ages including the elderly. Expect a queue at peak times — arrive early for lunch.",
+        mustOrder: ["Abalone Porridge 전복죽", "Grilled Abalone 전복구이", "Abalone Sashimi 전복회"],
+        address: "1282 Haemajihaean-ro, Gujwa-eup, Jeju-si, Jeju-do 63356, South Korea (명진전복)",
+        mapQuery: "명진전복 Myeong Jin Jeonbok restaurant Gujwa Jeju"
+      },
+      tips: ["Aqua Planet has lifts — no stairs needed at all", "Seongsan base walk is gorgeous even without climbing — great for elderly & stroller"],
+      restaurants: {
+        breakfast: [
+          { source:"ai", emoji:"🍳", name:"Sunrise Café 일출카페", cuisine:"Café · Breakfast",
+            desc:"A charming café on the east coast near Seongsan, positioned to catch the famous Ilchulbong sunrise light. Serves Jeju black sesame waffles, egg sandwiches and tangerine juice. A great energising breakfast before a full day of east coast exploration.",
+            dishes:["Black Sesame Waffle 흑임자와플","Egg & Cheese Sandwich","Jeju Tangerine Juice 귤주스"],
+            address:"Seongsan-eup, Seogwipo-si, Jeju-do 63644, South Korea", mapQuery:"sunrise cafe breakfast Seongsan Jeju" },
+          { source:"ai", emoji:"🥣", name:"Gujwa Village Morning 구좌아침", cuisine:"Korean · Breakfast",
+            desc:"A simple village breakfast spot in Gujwa-eup — near the famous Myeong Jin Jeon Bok restaurant. A quiet, no-frills Korean morning meal before the day's activities get underway. The haenyeo grandmothers running it are famously warm and welcoming.",
+            dishes:["Porridge 죽","Steamed Egg 계란찜","Kimchi + Banchan 김치반찬"],
+            address:"Gujwa-eup, Jeju-si, Jeju-do 63353, South Korea", mapQuery:"Korean breakfast restaurant Gujwa Jeju" },
+          { source:"ai", emoji:"☕", name:"Woljeongri Beach Café 월정리카페", cuisine:"Café",
+            desc:"Woljeongri Beach is known for its electric-blue water and its trendy beachfront café strip. Grab a morning coffee and watch the waves — flat, paved access along the beach makes it easy for everyone. A 20-minute drive from Seongsan.",
+            dishes:["Flat White","Jeju Citrus Ade 감귤에이드","Croissant"],
+            address:"Woljeong-ri, Gujwa-eup, Jeju-si, Jeju-do 63353, South Korea (월정리해변)", mapQuery:"월정리카페 Woljeongri Beach cafe Jeju" }
+        ],
+        lunch: [
+          { source:"friends", emoji:"🦪", name:"Myeong Jin Jeon Bok 명진전복", cuisine:"Korean · Abalone Specialist",
+            desc:"One of Jeju's most celebrated abalone restaurants, right on the coast road in Gujwa. Fresh haenyeo-caught abalone served as silky porridge, sashimi and grilled. The abalone porridge is deeply nourishing — perfect for elderly and babies. Expect queues at peak time — arrive by noon.",
+            dishes:["Abalone Porridge 전복죽","Grilled Abalone 전복구이","Abalone Sashimi 전복회"],
+            address:"1282 Haemajihaean-ro, Gujwa-eup, Jeju-si, Jeju-do 63356, South Korea (명진전복)",
+            mapQuery:"명진전복 Myeong Jin Jeonbok restaurant Gujwa Jeju" }
+        ],
+        dinner: [
+          { source:"ai", emoji:"🍣", name:"Seongsan Haejangguk 성산해장국", cuisine:"Korean · Restorative Soups",
+            desc:"A popular local dinner restaurant near Seongsan serving hearty Korean bone broths and stews. After a big day of sightseeing, the rich ox bone broth (seolleongtang) is deeply restorative for all ages — mild enough for elderly and can be served plain for babies.",
+            dishes:["Seolleongtang 설렁탕","Yukgaejang 육개장","Steamed Rice 공기밥"],
+            address:"Seongsan-eup, Seogwipo-si, Jeju-do 63644, South Korea", mapQuery:"해장국 haejangguk restaurant Seongsan Jeju" },
+          { source:"ai", emoji:"🦞", name:"Dongbu Fish Market 동부수산시장", cuisine:"Korean · Fresh Seafood Market",
+            desc:"Head to the east coast fish market to pick your live seafood and have it prepared right there — spiny lobster, crab, clams and freshly caught fish. Noisy, fun and utterly authentic. A memorable dinner experience. Baby carrier recommended as it gets busy.",
+            dishes:["Live Lobster 랍스터","Steamed Crab 게찜","Spicy Fish Stew 매운탕"],
+            address:"Gujwa-eup, Jeju-si, Jeju-do 63353, South Korea (동부수산시장)", mapQuery:"동부수산시장 east coast fish market Gujwa Jeju" },
+          { source:"ai", emoji:"🍖", name:"Jeju Black Pork House 흑돼지하우스", cuisine:"Korean BBQ",
+            desc:"A reliable BBQ restaurant in the Seongsan area serving Jeju's prized free-range black pork. After a big activity-packed day, nothing beats sitting around a charcoal grill with the family. Table fans help with the smoke — manageable for all ages.",
+            dishes:["Black Pork Belly 흑돼지삼겹살","Garlic & Perilla Wrap","Soybean Paste Stew 된장찌개"],
+            address:"Seongsan-eup, Seogwipo-si, Jeju-do 63644, South Korea", mapQuery:"흑돼지 black pork BBQ Seongsan Jeju" }
+        ]
+      }
+    },
+    // ─── DAY 4 ───
+    {
+      day: 4, date: "Fri, 5 Jun", dow: "Fri",
+      to: "Jeju North 🌬️", zone: "north",
+      hotel: "Family Garden Village Pension",
+      hotelAddress: "54-36 Uryeongseo-ro 16-gil, Jeju-si, Jeju-do, South Korea 63072",
+      thingsToDo: [
+        {
+          emoji: "🌈",
+          name: "Dodu Rainbow Road 도두 무지개해안도로",
+          desc: "A short stretch of coastal road painted in rainbow colours with the ocean on one side and Jeju City on the other. It's one of Jeju's most Instagrammed spots. Very flat, fully paved, and easy to stroll with a pram. A 10-minute stop that produces excellent family photos. Best in morning light.",
+          tags: ["baby", "elderly"],
+          address: "Dodu 1-dong, Jeju-si, Jeju-do 63078, South Korea", mapQuery: "도두무지개해안도로 Dodu Rainbow Road Jeju"
+        },
+        {
+          emoji: "🏖️",
+          name: "Hyeopjae Beach 협재해수욕장",
+          desc: "Regularly voted one of Korea's most beautiful beaches, with impossibly turquoise water and soft white sand. The sea here is unusually shallow and calm — perfect for paddling with a baby in complete safety. The beach is wide, flat and easy to access with a stroller. Biyangdo island floats just offshore. Bring a beach mat and sunscreen and plan to stay a while.",
+          tags: ["baby", "elderly"],
+          address: "Hallim-eup, Jeju-si, Jeju-do 63018, South Korea (협재해수욕장)", mapQuery: "협재해수욕장 Hyeopjae Beach Hallim Jeju"
+        },
+        {
+          emoji: "🦩",
+          name: "Hallim Park 한림공원",
+          desc: "A huge botanical and theme park featuring Jeju's famous lava tube caves (walk through underground volcanic tunnels!), subtropical plant gardens, a palm tree avenue, flamingos, peacocks and a folk village section. Wide paved paths throughout make it completely accessible for strollers and mobility aids. Allow 2–3 hours. One of the best all-ages attractions on the island.",
+          tags: ["baby", "elderly"],
+          address: "300 Hallim-ro, Hallim-eup, Jeju-si, Jeju-do 63018, South Korea", mapQuery: "한림공원 Hallim Park Jeju"
+        },
+        {
+          emoji: "🧂",
+          name: "Gueom Stone Salt Flats 구엄리 돌염전",
+          desc: "A unique centuries-old sea salt harvesting site where villagers channelled seawater into shallow volcanic rock pools to evaporate into salt — one of the only such sites left in Korea. It's a quiet, photogenic place right at the shoreline. Completely flat, just a short walk from the road. Educational and uncrowded.",
+          tags: ["baby", "elderly"],
+          address: "Gueom-ri, Aewol-eup, Jeju-si, Jeju-do 63035, South Korea", mapQuery: "구엄리돌염전 Gueom Stone Salt Flats Jeju"
+        },
+        {
+          emoji: "🌅",
+          name: "Sinchang Windmill Coastal Road 신창풍차해안도로",
+          desc: "A scenic coastal drive (or short walk) lined with large white wind turbines standing dramatically against the ocean — best at sunset when the light turns golden. There's a small promenade where you can stop, park and walk with the stroller along the cliffside path. A perfect way to end the driving day.",
+          tags: ["baby", "elderly"],
+          address: "Sinchang-ri, Hangyeong-myeon, Jeju-si, Jeju-do 63008, South Korea", mapQuery: "신창풍차해안도로 Sinchang Windmill Coastal Road Jeju"
+        }
+      ],
+      optionalThingsToDo: [],
+      restaurant: null,
+      tips: ["Moving day! Check out from Velum Resort in the morning", "Hyeopjae is perfectly flat — stroller goes right onto the sand"],
+      restaurants: {
+        breakfast: [
+          { source:"ai", emoji:"🥞", name:"Hallim Bakery Morning 한림베이커리", cuisine:"Bakery · Breakfast",
+            desc:"A popular local bakery in Hallim town, perfect for a quick grab-and-go breakfast before hitting the north coast sights. Fresh bread, pastries and hot drinks to fuel the day. Parking right outside for the car.",
+            dishes:["Cream Bun 크림빵","Cheese Toast 치즈토스트","Americano 아메리카노"],
+            address:"Hallim-eup, Jeju-si, Jeju-do 63018, South Korea", mapQuery:"베이커리 bakery breakfast Hallim Jeju" },
+          { source:"ai", emoji:"🍚", name:"Guksu Village 국수마을", cuisine:"Korean · Noodle Breakfast",
+            desc:"Many Jeju locals start their day with a bowl of hot pork bone noodle soup. This friendly spot in the north serves guksu from early morning — light, clean and warming. A very affordable and filling family breakfast.",
+            dishes:["Jeju Pork Noodle Soup 돼지국수","Boiled Egg 삶은계란","Kimchi Side 김치"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"국수마을 Guksu Village noodle breakfast Jeju" },
+          { source:"ai", emoji:"☕", name:"Hyeopjae Beach Café 협재카페", cuisine:"Beachfront Café",
+            desc:"One of the cafés right on the turquoise Hyeopjae beach — have your breakfast with your toes in the sand (almost). Perfect timing if you want to enjoy the beach in the quiet of the morning before the crowds arrive.",
+            dishes:["Açaí Bowl","Iced Coffee","Toast Sandwich 토스트"],
+            address:"Hallim-eup, Jeju-si, Jeju-do 63018, South Korea (협재해수욕장 앞)", mapQuery:"협재카페 cafe Hyeopjae beach Jeju" }
+        ],
+        lunch: [
+          { source:"ai", emoji:"🦩", name:"Hallim Park Restaurant 한림공원식당", cuisine:"Korean · Cafeteria",
+            desc:"Inside Hallim Park, there's a convenient cafeteria-style restaurant serving bibimbap, noodles and set meals. Not a gourmet destination, but excellent for a family lunch in the middle of a big park day — flat access, highchairs available.",
+            dishes:["Bibimbap 비빔밥","Ramyeon 라면","Haemul Pajeon 해물파전"],
+            address:"300 Hallim-ro, Hallim-eup, Jeju-si, Jeju-do 63018, South Korea (한림공원 내)", mapQuery:"한림공원 Hallim Park restaurant cafe Jeju" },
+          { source:"ai", emoji:"🌊", name:"Coastal Seafood Pojangmacha", cuisine:"Korean · Street Food",
+            desc:"Along the Sinchang coastal road and around Hyeopjae, look for pojangmacha (street food tents) serving freshly grilled haemul and seafood skewers at the roadside. Grab a table, order a mix of skewers and eat with the ocean breeze.",
+            dishes:["Grilled Squid 오징어구이","Tteokbokki 떡볶이","Fish Cake 어묵"],
+            address:"Sinchang-ri, Hangyeong-myeon, Jeju-si, Jeju-do 63008, South Korea (신창풍차해안도로)", mapQuery:"신창 pojangmacha street food Sinchang Jeju" },
+          { source:"ai", emoji:"🍱", name:"Aewol Café Street Lunch 애월카페거리", cuisine:"Café · Light Lunch",
+            desc:"Aewol town on the northwest coast is famous for its string of ocean-view cafés. Several double as lunch spots serving bagel sandwiches, grain bowls and pasta. A scenic detour worth making — stroller friendly along the coastal promenade.",
+            dishes:["Bagel Sandwich 베이글","Grain Bowl 그레인볼","Sparkling Ade 에이드"],
+            address:"Aewol-eup, Jeju-si, Jeju-do 63035, South Korea (애월카페거리)", mapQuery:"애월카페거리 Aewol cafe street Jeju lunch" }
+        ],
+        dinner: [
+          { source:"ai", emoji:"🍲", name:"Jeju City Ganjang Gejang 제주간장게장", cuisine:"Korean · Raw Crab",
+            desc:"Ganjang gejang — raw marinated soy-sauce crab — is one of Korea's most coveted delicacies. This Jeju City restaurant does an excellent version: silky, briny crab served in its shell with warm rice. Called 'rice thief' by Koreans because you keep eating rice with it.",
+            dishes:["Soy Marinated Crab 간장게장","Steamed Rice 공기밥","Doenjang Jjigae 된장찌개"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"간장게장 ganjang gejang restaurant Jeju City" },
+          { source:"ai", emoji:"🥩", name:"Jeju Makchang Alley 막창골목", cuisine:"Korean BBQ · Offal Grill",
+            desc:"For the adventurous adults: Jeju has a famous alley of makchang (pork intestine) BBQ restaurants near the city centre. Charcoal-grilled until crispy and dipped in sesame salt — a Jeju speciality that locals swear by. Not for the faint-hearted but absolutely delicious.",
+            dishes:["Makchang 막창","Grilled Pork Jowl 항정살","Soybean Stew 된장찌개"],
+            address:"Jeju-si, Jeju-do 63166, South Korea (막창골목)", mapQuery:"막창골목 makchang BBQ alley Jeju City" },
+          { source:"ai", emoji:"🍣", name:"Dongmun Hoetjip 동문회집", cuisine:"Korean · Sashimi",
+            desc:"Near the famous Dongmun Market, this restaurant specialises in Jeju raw fish (hoe) — platters of fresh local catch served with lettuce wraps, sesame oil, gochujang and chilled soju. Great for a first proper Jeju city evening.",
+            dishes:["Jeju Sashimi Platter 제주모둠회","Spicy Fish Soup 매운탕","Grilled Fish 생선구이"],
+            address:"18 Gwan-deong-ro, Jeju-si, Jeju-do 63166, South Korea (동문 회집)", mapQuery:"동문회집 sashimi restaurant Dongmun Jeju" }
+        ]
+      }
+    },
+    // ─── DAY 5 ───
+    {
+      day: 5, date: "Sat, 6 Jun", dow: "Sat",
+      to: "Jeju City 🏙️", zone: "north",
+      hotel: "Family Garden Village Pension",
+      hotelAddress: "54-36 Uryeongseo-ro 16-gil, Jeju-si, Jeju-do, South Korea 63072",
+      thingsToDo: [
+        {
+          emoji: "🏙️",
+          name: "Jeju City Explore",
+          desc: "Jeju City is the island's capital and a proper urban hub with great cafes, shops and restaurants. The old city area around Chilseong-ro has covered shopping arcades, street food stalls, and department stores — all air-conditioned, which is welcome on a warm June day. A relaxed morning here is great for picking up baby supplies, Korean skincare, or souvenirs.",
+          tags: ["baby", "elderly"],
+          address: "Chilseong-ro, Jeju-si, Jeju-do 63166, South Korea", mapQuery: "칠성로 Chilseong-ro Jeju City"
+        },
+        {
+          emoji: "🥩",
+          name: "Dongmun Traditional Market 동문재래시장",
+          desc: "Jeju's most famous and beloved traditional market, established in 1945 and still buzzing every single day until 11pm. It's a multi-sensory feast: fresh haenyeo seafood, Jeju black pork skewers, tangerine juice, hallabong sweets, and Korean street snacks at every turn. The covered market is stroller-accessible via wide central aisles. Go for dinner — the atmosphere at night is electric. Try the grilled black pork 흑돼지구이 from the street stalls outside.",
+          tags: ["baby", "elderly"],
+          address: "18 Gwan-deong-ro, Jeju-si, Jeju-do 63166, South Korea (동문재래시장)", mapQuery: "동문재래시장 Dongmun Traditional Market Jeju"
+        }
+      ],
+      optionalThingsToDo: [],
+      restaurant: null,
+      tips: ["Dongmun is open until 11pm — ideal for a lively dinner outing", "Stock up on baby nappies and formula at Homeplus nearby if needed"],
+      restaurants: {
+        breakfast: [
+          { source:"ai", emoji:"🥐", name:"Jeju Dongmun Pojangmacha Morning", cuisine:"Korean Street Food · Breakfast",
+            desc:"The outer stalls of Dongmun Market open early with breakfast staples: hotteok (sweet pancakes), gyeran-ppang (egg bread), steamed corn and fresh tangerine juice. A wonderful, cheap and energetic way to start your Jeju City day — the market atmosphere at 8am is already lively.",
+            dishes:["Hotteok 호떡","Egg Bread 계란빵","Tangerine Juice 귤주스"],
+            address:"18 Gwan-deong-ro, Jeju-si, Jeju-do 63166, South Korea (동문재래시장)", mapQuery:"동문재래시장 Dongmun Market street food breakfast Jeju" },
+          { source:"ai", emoji:"☕", name:"Jeju Old Town Café 구도심카페", cuisine:"Specialty Coffee · Café",
+            desc:"Jeju City's old downtown area has a growing specialty coffee scene. This neighbourhood café serves excellent single-origin pour-overs and freshly baked goods. A calm, civilised morning coffee stop before the bustle of Dongmun.",
+            dishes:["Pour-Over Coffee","Jeju Honey Latte 꿀라떼","Butter Croissant 버터크루아상"],
+            address:"Jeju-si, Jeju-do 63166, South Korea (구도심)", mapQuery:"specialty coffee cafe Jeju City old town" },
+          { source:"ai", emoji:"🍜", name:"Guksu Geori 국수거리", cuisine:"Korean · Noodle Alley",
+            desc:"Jeju City has an entire alley dedicated to Jeju-style pork noodle soup — light milky broth with chewy noodles, topped with sliced pork and spring onion. It's humble, perfect and deeply Jeju. Most stalls open by 7am.",
+            dishes:["Jeju Pork Noodle 돼지국수","Bibim Guksu 비빔국수","Boiled Pork Side 수육"],
+            address:"Jeju-si, Jeju-do 63166, South Korea (국수거리)", mapQuery:"국수거리 Guksu noodle alley Jeju City" }
+        ],
+        lunch: [
+          { source:"ai", emoji:"🍖", name:"Heukdon Sikdang 흑돈식당", cuisine:"Korean BBQ · Black Pork",
+            desc:"One of the most popular lunchtime BBQ spots in Jeju City, known for its expertly trimmed Jeju black pork. Unlike the evening BBQ spots, this one is bright, quiet and relaxed at lunchtime — easier with a baby and more comfortable for elderly diners.",
+            dishes:["Black Pork Thick Belly 두툼삼겹살","Garlic-Butter Mushrooms 버섯구이","Kimchi Stew 김치찌개"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"흑돈식당 Heukdon Sikdang black pork Jeju City" },
+          { source:"ai", emoji:"🫕", name:"Jeju Haemul Tang 제주해물탕", cuisine:"Korean · Spicy Seafood Stew",
+            desc:"A popular lunchtime restaurant serving Jeju's famous haemul tang — a huge cauldron of spicy seafood stew with crab, clams, squid, prawns and vegetables. Sharing pot at the table, dipped with rice. Spectacular value and intensely flavourful.",
+            dishes:["Haemul Tang 해물탕","Steamed Rice 공기밥","Seaweed Soup 미역국"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"해물탕 haemul tang seafood stew Jeju City" },
+          { source:"ai", emoji:"🥗", name:"Jeju Local 7 Days Kitchen 로컬식당", cuisine:"Modern Korean · Healthy",
+            desc:"A modern café-restaurant in Jeju City serving grain bowls, fresh salads and Jeju ingredient-focused light meals. Air-conditioned, highchairs available, and the menu has many mild options suitable for elderly. A welcome healthy option after several days of BBQ.",
+            dishes:["Jeju Grain Bowl 제주그레인볼","Barley Salad 보리샐러드","Mandarin Dressing Dish 귤드레싱"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"modern Korean healthy lunch restaurant Jeju City" }
+        ],
+        dinner: [
+          { source:"ai", emoji:"🛍️", name:"Dongmun Market Night Stalls 동문야시장", cuisine:"Korean Street Food",
+            desc:"Dongmun Market's evening market is one of Korea's best street food experiences. Graze from stall to stall: grilled black pork skewers, seafood hotpot, jeon pancakes, tteokbokki, fresh oysters and dessert crepes. Lively, fun and affordable — the kids and adults will love it equally. Push the stroller through the wide central aisles.",
+            dishes:["Black Pork Skewer 흑돼지꼬치","Fresh Oysters 생굴","Hallabong Ice Cream 한라봉아이스크림"],
+            address:"18 Gwan-deong-ro, Jeju-si, Jeju-do 63166, South Korea (동문야시장)", mapQuery:"동문야시장 Dongmun Market night street food Jeju" },
+          { source:"ai", emoji:"🦑", name:"Jeju Ojingeo Sukhoe 오징어숙회", cuisine:"Korean · Seafood",
+            desc:"A local restaurant near the city centre famed for its parboiled squid (sukhoe) served with a gochujang dipping sauce — a Jeju street classic. Also does excellent haemul pajeon and cold noodles. Very affordable and cheerful.",
+            dishes:["Parboiled Squid 오징어숙회","Seafood Pancake 해물파전","Cold Buckwheat Noodle 막국수"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"오징어숙회 ojingeo sukhoe squid restaurant Jeju City" },
+          { source:"ai", emoji:"🍱", name:"Jeju Chodang Sundubu 제주초당순두부", cuisine:"Korean · Soft Tofu",
+            desc:"A gentle and restorative dinner choice — sundubu jjigae (silky soft tofu stew) in various broths from mild to spicy. One of the most elderly-friendly and baby-friendly Korean dinner options. Warm, clean flavours and extremely nourishing after a day of sightseeing.",
+            dishes:["Seafood Sundubu 해물순두부찌개","Mild White Tofu Stew 백순두부","Steamed Egg 계란찜"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"순두부찌개 sundubu jjigae tofu restaurant Jeju City" }
+        ]
+      }
+    },
+    // ─── DAY 6 ───
+    {
+      day: 6, date: "Sun, 7 Jun", dow: "Sun",
+      to: "North Highlights 🌋", zone: "north",
+      hotel: "Family Garden Village Pension",
+      hotelAddress: "54-36 Uryeongseo-ro 16-gil, Jeju-si, Jeju-do, South Korea 63072",
+      thingsToDo: [
+        {
+          emoji: "🪨",
+          name: "Jeju Stone Park 제주돌문화공원",
+          desc: "A vast outdoor museum spread across forested land celebrating Jeju's ancient volcanic stone culture — including dozens of carved stone grandfather statues (Harubang), traditional thatched houses and volcanic rock formations. Wide woodland paths loop through the site, making it manageable with a stroller and pleasant for elderly visitors who enjoy gentle walking. Peaceful, uncrowded and genuinely fascinating.",
+          tags: ["baby", "elderly"],
+          address: "2894-70 Gyorae-ri, Jocheon-eup, Jeju-si, Jeju-do 63345, South Korea", mapQuery: "제주돌문화공원 Jeju Stone Park Jocheon"
+        },
+        {
+          emoji: "🌿",
+          name: "Sangumburi Crater 산굼부리",
+          desc: "A perfectly preserved volcanic crater 132 metres deep, designated as a Korean Natural Monument. You walk along the grassy rim with sweeping views down into the forested hollow — rare plants and birds inhabit the interior. The rim path is about 2km, mostly flat, with some gentle slopes. Baby carriers are better than strollers here. A serene and impressive natural site.",
+          tags: ["baby", "elderly"],
+          address: "590-1 Gyorae-ri, Jocheon-eup, Jeju-si, Jeju-do 63345, South Korea", mapQuery: "산굼부리 Sangumburi Crater Jocheon Jeju"
+        },
+        {
+          emoji: "🗼",
+          name: "Mini Mini Land 미니미니랜드",
+          desc: "An outdoor park where famous world landmarks — the Eiffel Tower, Colosseum, Taj Mahal, Statue of Liberty — are recreated at 1:100 scale in incredible detail. Babies and young children are fascinated by the miniature world around them, and adults get great photos. Paths are paved and flat throughout. A lighthearted and fun stop for the whole family.",
+          tags: ["baby", "elderly"],
+          address: "93 Bijarim-ro, Gujwa-eup, Jeju-si, Jeju-do 63353, South Korea", mapQuery: "미니미니랜드 Mini Mini Land Jeju"
+        },
+        {
+          emoji: "🎨",
+          name: "Donghwa Village 동화마을",
+          desc: "A neighbourhood that's been transformed into a fairy-tale street art village, with every wall, alley and staircase painted with whimsical murals of characters, forests and fantasy scenes. It's completely flat and compact — a fun 30-minute wander. Great backdrop for family photos and young children love spotting all the characters.",
+          tags: ["baby", "elderly"],
+          address: "Donghwa-gil, Jeju-si, Jeju-do 63169, South Korea", mapQuery: "동화마을 Donghwa Village Jeju City"
+        }
+      ],
+      optionalThingsToDo: [
+        {
+          emoji: "🤿",
+          name: "Jeju Haenyeo Museum 제주해녀박물관",
+          desc: "A beautifully designed museum dedicated to Jeju's legendary haenyeo — the female free-divers who harvest seafood from the ocean floor without breathing equipment, a tradition stretching back 2,000 years. UNESCO-listed intangible heritage. The museum has lift access, excellent English signage, and fascinating photography and video exhibits. A culturally rich stop for adults and elderly visitors especially.",
+          tags: ["elderly"],
+          address: "26 Haenyeo-Museum-gil, Gujwa-eup, Jeju-si, Jeju-do 63353, South Korea", mapQuery: "제주해녀박물관 Jeju Haenyeo Museum Gujwa"
+        }
+      ],
+      restaurant: {
+        name: "Dombedon 돔베돈",
+        cuisine: "Korean BBQ · Jeju Black Pork 흑돼지",
+        desc: "Jeju black pork (흑돼지) is the island's most prized culinary experience — free-range pigs with darker, richer, more flavourful meat than regular pork. Dombedon is one of the most beloved restaurants in Jeju City for this dish, known for perfectly charcoal-grilled slices served with fresh garlic, perilla leaves, fermented kimchi and ssamjang paste. Wrap it yourself in lettuce for the full experience. Reserve a table in advance — it fills up quickly on weekends.",
+        mustOrder: ["Jeju Black Pork BBQ 흑돼지구이", "Dombegogi (boiled pork slices) 돔베고기", "Doenjang jjigae 된장찌개", "Wrapped in perilla + garlic"],
+        address: "25, Gwandeong-ro 15-gil, Ido 2-dong, Jeju-si, Jeju-do 63166, South Korea (돔베돈)",
+        phone: "+82-64-753-0008",
+        mapQuery: "돔베돈 Dombedon restaurant Jeju City"
+      },
+      tips: ["Book Dombedon for dinner in advance — very popular on Sundays!", "Sangumburi is best in morning light when the mist is still in the crater"],
+      restaurants: {
+        breakfast: [
+          { source:"ai", emoji:"🍳", name:"Jeju City Egg Drop 에그드랍", cuisine:"Café · Egg Sandwiches",
+            desc:"A popular Korean chain with a Jeju location, famous for its perfectly crafted egg sandwiches on warm brioche bread. Queues form early but move fast. Great fuel before a full day of north Jeju sightseeing. Baby-friendly and very quick service.",
+            dishes:["Original Egg Drop Sandwich","Truffle Egg Sandwich 트러플에그","Americano"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"에그드랍 Egg Drop sandwich cafe Jeju City" },
+          { source:"ai", emoji:"☕", name:"Samsunghyeol Café 삼성혈카페", cuisine:"Café · Jeju Heritage",
+            desc:"A beautiful café near the Samsunghyeol folk heritage site in Jeju City — housed in a traditional-style building with garden seating. Serves Jeju medicinal teas, rice cakes and light pastries. Calm, peaceful and great for elderly diners.",
+            dishes:["Jeju Barley Tea 보리차","Injeolmi Rice Cake 인절미","Green Tea Set 녹차세트"],
+            address:"Jeju-si, Jeju-do 63169, South Korea (삼성혈 근처)", mapQuery:"삼성혈 cafe near Samsunghyeol Jeju City" },
+          { source:"ai", emoji:"🥐", name:"Morning Bakery Table 아침베이커리", cuisine:"Bakery · Breakfast",
+            desc:"A neighbourhood bakery in Jeju City open from 7am, baking fresh bread and pastries daily. Pick up a bag of goods to eat at the pension or enjoy in-store. The sweet red bean bun (danpat-ppang) is a Jeju morning classic.",
+            dishes:["Red Bean Bun 단팥빵","Cream Cheese Bread 크림치즈빵","Coffee"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"아침베이커리 morning bakery Jeju City" }
+        ],
+        lunch: [
+          { source:"ai", emoji:"🌿", name:"Sanbang Sikdang 산방식당", cuisine:"Korean · Mountain Greens",
+            desc:"Near Sangumburi Crater, this rustic restaurant serves dishes made with foraged Jeju mountain greens — bracken, wild garlic and mushrooms in doenjang-based stews and bibimbap. Hearty and earthy. A lovely lunch after the crater walk.",
+            dishes:["Mountain Greens Bibimbap 산나물비빔밥","Wild Garlic Soup 산마늘국","Acorn Jelly 도토리묵"],
+            address:"Gyorae-ri, Jocheon-eup, Jeju-si, Jeju-do 63345, South Korea (산굼부리 인근)", mapQuery:"산나물 mountain greens Korean food Gyorae Jocheon Jeju" },
+          { source:"ai", emoji:"🍱", name:"Mini Land Café 미니랜드카페", cuisine:"Café · Light Meals",
+            desc:"The on-site café at Mini Mini Land serves simple kimbap rolls, ramen cups and drinks. Convenient if you want to stay in the area and keep the baby happy without a long drive. Quick, easy, and no fuss.",
+            dishes:["Kimbap 김밥","Cup Ramen 컵라면","Juice Pouch 주스"],
+            address:"93 Bijarim-ro, Gujwa-eup, Jeju-si, Jeju-do 63353, South Korea (미니미니랜드 내)", mapQuery:"미니미니랜드 Mini Mini Land cafe Jeju" },
+          { source:"ai", emoji:"🍜", name:"Jeju Stone Park Noodles 돌문화공원국수", cuisine:"Korean · Noodle Lunch",
+            desc:"A café near Jeju Stone Park serving warm noodle soups and kimbap — a reliable, simple lunch option before or after the park. The kal-guksu (knife-cut noodles) is the specialty: thick, chewy and deeply satisfying.",
+            dishes:["Kal-guksu 칼국수","Kimbap Roll 김밥","Doenjang Jjigae 된장찌개"],
+            address:"2894-70 Gyorae-ri, Jocheon-eup, Jeju-si, Jeju-do 63345, South Korea (돌문화공원 인근)", mapQuery:"칼국수 noodle restaurant near Jeju Stone Park" }
+        ],
+        dinner: [
+          { source:"friends", emoji:"🥩", name:"Dombedon 돔베돈", cuisine:"Korean BBQ · Jeju Black Pork 흑돼지",
+            desc:"Jeju black pork (흑돼지) is the island's most prized culinary experience — free-range pigs with darker, richer, more flavourful meat. Dombedon is one of Jeju City's most beloved restaurants for this dish. Perfectly charcoal-grilled slices, served with fresh garlic, perilla leaves and ssamjang. Wrap it in lettuce for the full experience. Book ahead — fills fast on weekends.",
+            dishes:["Jeju Black Pork BBQ 흑돼지구이","Dombegogi Boiled Pork 돔베고기","Doenjang Jjigae 된장찌개"],
+            address:"25, Gwandeong-ro 15-gil, Ido 2-dong, Jeju-si, Jeju-do 63166, South Korea (돔베돈)",
+            phone:"+82-64-753-0008",
+            mapQuery:"돔베돈 Dombedon black pork restaurant Jeju City" },
+          { source:"ai", emoji:"🦪", name:"Jeju Raw Oyster Bar 제주굴집", cuisine:"Korean · Oysters",
+            desc:"A small, lively oyster bar near Jeju City serving freshly shucked Jeju oysters by the basket. Add vinegar-chilli sauce, wrap in seaweed with rice or eat raw. A lighter alternative to BBQ — excellent for a pre-dinner snack or a main if oysters are your thing.",
+            dishes:["Raw Oysters 생굴","Oyster Jeon 굴전","Seaweed Wrap 해초쌈"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"생굴 oyster bar restaurant Jeju City" },
+          { source:"ai", emoji:"🍲", name:"Haenyeo Gukbap 해녀국밥", cuisine:"Korean · Soup & Rice",
+            desc:"A comforting evening option: gukbap (rice in soup) made with haenyeo-caught seafood and clear Jeju broth. Light, restorative and easy on the digestion — ideal for elderly after a full day out. Closes at 9pm so go early.",
+            dishes:["Seafood Gukbap 해물국밥","Steamed Tofu 두부찜","Pickled Radish 깍두기"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"해녀국밥 haenyeo gukbap soup Jeju City" }
+        ]
+      }
+    },
+    // ─── DAY 7 ───
+    {
+      day: 7, date: "Mon, 8 Jun", dow: "Mon",
+      to: "Hallasan Day 🏔️", zone: "north",
+      hotel: "Family Garden Village Pension",
+      hotelAddress: "54-36 Uryeongseo-ro 16-gil, Jeju-si, Jeju-do, South Korea 63072",
+      thingsToDo: [
+        {
+          emoji: "🏔️",
+          name: "Hallasan National Park 한라산",
+          desc: "South Korea's highest mountain at 1,950m, a dormant volcano and UNESCO World Heritage Site. The entire park is a protected natural treasure with ancient forests, alpine meadows and rare wildlife. For the family, the Eorimok Trail (4.7km return, 2–3 hours) is the recommended route — it winds through beautiful silver fir forest to Witse Oreum, with no steep sections. The Yeongsil Trail (5.8km return) offers the most dramatic views into the crater valley. Note: trails close at 12–1pm to ensure all hikers descend safely before dark, so start by 9am.",
+          tags: ["baby"],
+          address: "San 1-2, Seona 2-dong, Jeju-si, Jeju-do 63009, South Korea (한라산 어리목탐방로)", mapQuery: "한라산어리목 Hallasan Eorimok Trail Jeju"
+        },
+        {
+          emoji: "🛍️",
+          name: "Afternoon Free Time & Last Shopping",
+          desc: "After the morning hike, spend the afternoon relaxing at the pension or revisiting a favourite spot. Jeju City has excellent duty-free and souvenir shops — Jeju tangerine chocolates, black sesame snacks, cosmetics and local crafts make great gifts. The Lotte Duty Free and Shinsegae department store are both accessible by car.",
+          tags: ["baby", "elderly"],
+          address: "Jeju-si, Jeju-do 63166, South Korea", mapQuery: "Lotte Duty Free Jeju City shopping"
+        }
+      ],
+      optionalThingsToDo: [],
+      restaurant: null,
+      tips: ["CRITICAL: Start Hallasan by 9am — trails close at 12–1pm sharp", "Bring layers — Hallasan can be 5–10°C cooler than the coast in June", "Elderly visitor can wait comfortably at the trail entrance cafe while others hike"],
+      restaurants: {
+        breakfast: [
+          { source:"ai", emoji:"⛰️", name:"Eorimok Trail Entrance Café", cuisine:"Café · Trail Food",
+            desc:"Right at the Hallasan Eorimok trailhead there is a small café and visitor centre serving hot drinks, kimbap rolls and energy bars. Have a quick breakfast here before setting off on the trail — opening from 7am. Practical and energising.",
+            dishes:["Kimbap 김밥","Hot Instant Coffee","Energy Bar 에너지바"],
+            address:"San 1-2, Seona 2-dong, Jeju-si, Jeju-do 63009, South Korea (어리목탐방로 입구)", mapQuery:"한라산 어리목 Hallasan Eorimok Trail entrance cafe Jeju" },
+          { source:"ai", emoji:"🍞", name:"Hallasan Pension Breakfast", cuisine:"Pension Home Cooking",
+            desc:"Many Jeju pensions including the Family Garden Village Pension offer a simple Korean or Western breakfast option if pre-arranged the evening before — rice, soup, eggs and side dishes. Ask your host the night before. The most convenient option before an early Hallasan start.",
+            dishes:["Korean Breakfast Set 한식아침","Rice + Soup 밥국","Toast + Egg 토스트계란"],
+            address:"54-36 Uryeongseo-ro 16-gil, Jeju-si, Jeju-do 63072, South Korea (패밀리가든빌리지펜션)", mapQuery:"Family Garden Village Pension Jeju City" },
+          { source:"ai", emoji:"☕", name:"Jeju City Early Bird Café", cuisine:"Café",
+            desc:"On the drive toward Hallasan, stop at one of the 24-hour convenience stores (CU, GS25 or 7-Eleven) for freshly ground café coffee, onigiri rice balls and warm sandwiches — Korea's convenience store breakfast culture is outstanding and perfect for an early trailhead start.",
+            dishes:["Convenience Store Coffee 편의점커피","Onigiri 삼각김밥","Egg Sandwich 계란샌드위치"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"GS25 편의점 convenience store Jeju City" }
+        ],
+        lunch: [
+          { source:"ai", emoji:"🏔️", name:"Yeongsil Rest Area 영실휴게소", cuisine:"Korean · Trail Rest Stop",
+            desc:"Midway through the Yeongsil trail there is a small mountain rest hut selling hot ramyeon, instant noodles and hot drinks. Nothing fancy, but there's a genuine magic to eating a steaming cup of ramyeon at altitude on a mountain in Korea.",
+            dishes:["Mountain Ramyeon 산라면","Hot Barley Tea 보리차","Snack Bar"],
+            address:"San 1-1, Saekdal-dong, Seogwipo-si, Jeju-do 63597, South Korea (영실탐방로)", mapQuery:"한라산 영실 Hallasan Yeongsil Trail hut Jeju" },
+          { source:"ai", emoji:"🍱", name:"Post-Hike Kimbap Heaven 김밥천국", cuisine:"Korean · Quick Lunch",
+            desc:"After completing the Hallasan trail, reward the family at one of Jeju's ubiquitous Kimbap Heaven restaurants — the Korean equivalent of a diner. Fast, cheap, cheerful and enormous portions. Every dish on the menu is under 10,000 KRW.",
+            dishes:["Tuna Kimbap 참치김밥","Spicy Tteokbokki 떡볶이","Ramyeon 라면"],
+            address:"Jeju-si, Jeju-do 63166, South Korea (김밥천국)", mapQuery:"김밥천국 Kimbap Cheonguk restaurant Jeju City" },
+          { source:"ai", emoji:"🥘", name:"Jeju Last Lunch Feast 마지막날점심", cuisine:"Korean · Full Spread",
+            desc:"Your last full lunch in Jeju — make it count! Head to a proper jeongshik (Korean table d'hôte) restaurant serving 10–12 side dishes alongside a main: braised fish, japchae, kimchi jjeon and doenjang jjigae. A gorgeous send-off meal.",
+            dishes:["Jeju Jeongshik 제주정식","Japchae 잡채","Braised Burdock 우엉조림"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"제주정식 jeongshik Korean set meal Jeju City" }
+        ],
+        dinner: [
+          { source:"ai", emoji:"🍣", name:"Farewell Sashimi Dinner 회저녁", cuisine:"Korean · Sashimi",
+            desc:"Your last dinner in Jeju — splurge on a proper hoe (raw fish) dinner at a well-regarded Jeju City restaurant. Order the mixed platter: fresh tuna, sea bream, abalone and salmon. Served with lettuce, perilla and gochujang. A beautiful end to the trip.",
+            dishes:["Mixed Sashimi Platter 모둠회","Jeju Abalone 전복","Grilled Fish 생선구이"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"회식당 hoe sashimi restaurant Jeju City farewell" },
+          { source:"ai", emoji:"🥩", name:"Last Black Pork Night 마지막흑돼지", cuisine:"Korean BBQ",
+            desc:"Can't leave Jeju without one final Jeju black pork BBQ. Head to the famous Black Pork Street (흑돼지 거리) near Jeju City centre — lined with charcoal restaurants all serving the island's most iconic dish. A festive, celebratory final evening.",
+            dishes:["Black Pork Neck 항정살","Pork Belly 삼겹살","Perilla Leaf Wrap 깻잎쌈"],
+            address:"Yeondong 2-dong, Jeju-si, Jeju-do 63166, South Korea (흑돼지거리)", mapQuery:"black pork street Jeju City 흑돼지거리" },
+          { source:"ai", emoji:"🫕", name:"Jeju Haemul Jeongol 해물전골", cuisine:"Korean · Hot Pot",
+            desc:"A fitting final feast — haemul jeongol (seafood hot pot) bubbling with the full bounty of Jeju's ocean: crab, clams, prawns, fish and tofu in a rich chilli broth. Cooked at the table, shared as a family, ladled over rice. The perfect curtain-closer for eight days in Jeju.",
+            dishes:["Haemul Jeongol 해물전골","Steamed Rice 공기밥","Kkakdugi Radish Kimchi 깍두기"],
+            address:"Jeju-si, Jeju-do 63166, South Korea", mapQuery:"해물전골 haemul jeongol seafood hotpot Jeju City" }
+        ]
+      }
+    },
+    // ─── DAY 8 ───
+    {
+      day: 8, date: "Tue, 9 Jun", dow: "Tue",
+      to: "Fly Home 🛫", zone: "flight",
+      hotel: "", hotelAddress: "",
+      thingsToDo: [], optionalThingsToDo: [],
+      restaurant: null,
+      tips: ["Check out & head to Jeju International Airport 제주국제공항", "Allow extra time with baby & elderly through security", "Safe travels! 안녕히 가세요 ✈️"]
+    }
+  ]
+};
+
+var PACKING = [
+  {
+    category: "Baby Essentials", icon: "👶",
+    items: [
+      { text: "Diapers — extra pack for travel days", tag: "Baby" },
+      { text: "Baby wipes (3+ packs)", tag: "Baby" },
+      { text: "Portable changing mat", tag: "Baby" },
+      { text: "Baby food, pouches & snacks", tag: "Baby" },
+      { text: "Formula / milk powder", tag: "Baby" },
+      { text: "Bottles & microwave steriliser bags", tag: "Baby" },
+      { text: "Ergonomic baby carrier / sling", tag: "Baby" },
+      { text: "Compact stroller (for flat areas & markets)", tag: "Baby" },
+      { text: "Baby sunscreen SPF 50+", tag: "Baby" },
+      { text: "Baby first aid kit", tag: "Baby" },
+      { text: "Baby travel cot / sleep sack", tag: "Baby" },
+      { text: "Night light & white noise app/device", tag: "Baby" },
+      { text: "Suction toys for car rides", tag: "Baby" }
+    ]
+  },
+  {
+    category: "Elderly Comfort", icon: "👴",
+    items: [
+      { text: "All prescription medications — full supply + extra", tag: "Elderly" },
+      { text: "Comfortable non-slip walking shoes", tag: "Elderly" },
+      { text: "Foldable walking cane or stick", tag: "Elderly" },
+      { text: "Weekly pill organiser", tag: "Elderly" },
+      { text: "Doctor's medical letter (Korean translation helpful)", tag: "Elderly" },
+      { text: "Compression socks for long car/flight segments", tag: "Elderly" },
+      { text: "Small portable fan for warm weather", tag: "Elderly" },
+      { text: "Anti-slip bath mat (for hotel bathroom)", tag: "Elderly" }
+    ]
+  },
+  {
+    category: "Car & Road Trip", icon: "🚗",
+    items: [
+      { text: "International driving permit + licence", tag: "Car" },
+      { text: "Car rental confirmation (printed + phone)", tag: "Car" },
+      { text: "Phone mount for GPS navigation", tag: "Car" },
+      { text: "Baby/infant car seat (request from rental)", tag: "Car" },
+      { text: "Korean T-money / credit card for tolls", tag: "Car" },
+      { text: "Snacks & water bottles for car", tag: "Car" },
+      { text: "Motion sickness tablets (winding Jeju roads!)", tag: "Car" },
+      { text: "Car rubbish bags", tag: "Car" },
+      { text: "Extra wet wipes for spills", tag: "Car" }
+    ]
+  },
+  {
+    category: "Jeju Weather & Clothing", icon: "🌤️",
+    items: [
+      { text: "Light layers — June can be warm but Hallasan is cool", tag: null },
+      { text: "Windproof jacket (coastal areas can be breezy)", tag: null },
+      { text: "Comfortable walking shoes x2 pairs", tag: null },
+      { text: "Compact rain poncho / travel umbrella", tag: null },
+      { text: "Wide-brim sun hat", tag: null },
+      { text: "Sunscreen SPF 50+ (adults)", tag: null },
+      { text: "Insect repellent", tag: null },
+      { text: "Swimwear for Hyeopjae Beach", tag: null },
+      { text: "Water shoes / beach sandals", tag: null }
+    ]
+  },
+  {
+    category: "Korea Travel Essentials", icon: "🇰🇷",
+    items: [
+      { text: "Passport for all travellers", tag: null },
+      { text: "Korean Won (KRW) cash — markets prefer cash", tag: null },
+      { text: "Credit card (Visa/Mastercard widely accepted)", tag: null },
+      { text: "Hotel booking confirmations (all hotels)", tag: null },
+      { text: "Travel insurance documents", tag: null },
+      { text: "Naver Maps app (better than Google Maps in Korea)", tag: null },
+      { text: "Papago translation app (Korean translation)", tag: null },
+      { text: "Emergency contact list (printed)", tag: null }
+    ]
+  },
+  {
+    category: "Tech & Entertainment", icon: "📱",
+    items: [
+      { text: "Power bank — 20,000mAh for the family", tag: null },
+      { text: "Korean SIM card or pocket WiFi (pre-book online)", tag: null },
+      { text: "USB-C & Lightning charging cables", tag: null },
+      { text: "Universal travel adapter (Type C/F in Korea)", tag: null },
+      { text: "Camera + extra memory cards", tag: null },
+      { text: "Tablet with downloaded kids shows (offline)", tag: "Baby" }
+    ]
+  }
+];
+
+// ═══════════════════════════════════════
+//  APP LOGIC
+// ═══════════════════════════════════════
+var currentDay = 0;
+var packingState = {};
+try { var s = localStorage.getItem('jejuPacking'); if (s) packingState = JSON.parse(s); } catch(e) {}
+function savePacking() { try { localStorage.setItem('jejuPacking', JSON.stringify(packingState)); } catch(e) {} }
+
+var ZONE_COLORS = { south: '#1565C0', north: '#00897B', flight: '#43A047' };
+var ZONE_STRIPES = ['#1976D2','#0288D1','#00838F','#00897B','#2E7D32','#388E3C','#43A047','#66BB6A'];
+
+function renderDayStrip() {
+  var html = '';
+  TRIP.days.forEach(function(d, i) {
+    html += '<div class="day-chip' + (i===currentDay?' active':'') + '" data-day="'+i+'">' +
+      '<span class="day-chip-label">Day</span>' +
+      '<span class="day-chip-num">' + d.day + '</span>' +
+      '<span class="day-chip-dow">' + d.dow + '</span>' +
+    '</div>';
+  });
+  document.getElementById('dayStrip').innerHTML = html;
+}
+
+function renderRestaurants(restaurants) {
+  if (!restaurants) return '<div style="padding:14px;font-size:13px;color:#bbb;">No restaurant recommendations for this day.</div>';
+
+  var meals = [];
+  if (restaurants.breakfast && restaurants.breakfast.length) meals.push({ key:'breakfast', label:'🌅 Breakfast', data: restaurants.breakfast });
+  if (restaurants.lunch    && restaurants.lunch.length)    meals.push({ key:'lunch',     label:'☀️ Lunch',     data: restaurants.lunch });
+  if (restaurants.dinner   && restaurants.dinner.length)   meals.push({ key:'dinner',    label:'🌙 Dinner',    data: restaurants.dinner });
+
+  if (meals.length === 0) return '<div style="padding:14px;font-size:13px;color:#bbb;">No restaurant recommendations for this day.</div>';
+
+  var tabsHtml = '<div class="meal-tabs">';
+  meals.forEach(function(m, i) {
+    tabsHtml += '<div class="meal-tab' + (i===0?' active':'') + '" data-meal="'+m.key+'">'+m.label+'</div>';
+  });
+  tabsHtml += '</div>';
+
+  var panelsHtml = '';
+  meals.forEach(function(m, i) {
+    panelsHtml += '<div class="meal-panel' + (i===0?' active':'') + '" data-panel="'+m.key+'">';
+    m.data.forEach(function(r) {
+      var isFriends = r.source === 'friends';
+      var mq = encodeURIComponent(r.mapQuery);
+      var sourceHtml = isFriends
+        ? '<span class="rcard-source friends">❤️ Friends & Family</span>'
+        : '<span class="rcard-source ai">✦ AI Recommended</span>';
+      var dishesHtml = '';
+      if (r.dishes && r.dishes.length) {
+        dishesHtml = '<div class="rcard-dishes-label">🍴 Must Try</div><div class="rcard-dishes">';
+        r.dishes.forEach(function(d) { dishesHtml += '<span class="rcard-dish">'+d+'</span>'; });
+        dishesHtml += '</div>';
+      }
+      panelsHtml +=
+        '<div class="rcard' + (isFriends?' friends':'') + '">' +
+          '<div class="rcard-header">' +
+            '<div class="rcard-emoji">'+r.emoji+'</div>' +
+            '<div class="rcard-meta">' +
+              '<div class="rcard-name">'+r.name+'</div>' +
+              '<div class="rcard-cuisine">'+r.cuisine+'</div>' +
+              sourceHtml +
+            '</div>' +
+          '</div>' +
+          '<div class="rcard-desc">'+r.desc+'</div>' +
+          dishesHtml +
+          '<div class="rcard-addr">📍 '+r.address+(r.phone?' · 📞 '+r.phone:'')+'</div>' +
+          '<div class="rcard-btns">' +
+            '<a class="rcard-map-btn apple" href="https://maps.apple.com/?q='+mq+'" target="_blank">🗺️ Apple</a>' +
+            '<a class="rcard-map-btn google" href="https://maps.google.com/maps?q='+mq+'" target="_blank">📍 Google</a>' +
+            '<a class="rcard-map-btn naver" href="https://map.naver.com/p/search/'+encodeURIComponent(r.address+' '+r.name)+'" target="_blank">🟢 Naver</a>' +
+          '</div>' +
+        '</div>';
+    });
+    panelsHtml += '</div>';
+  });
+
+  return tabsHtml + panelsHtml;
+}
+
+function renderActivityCards(items, isOpt) {
+  if (!items || items.length === 0) {
+    return '<div style="padding:14px 15px;font-size:13px;color:#bbb;">None for this day.</div>';
+  }
+  var html = '<div class="activity-list">';
+  items.forEach(function(item) {
+    var mq = encodeURIComponent(item.mapQuery);
+    var appleUrl = 'https://maps.apple.com/?q=' + mq;
+    var googleUrl = 'https://maps.google.com/maps?q=' + mq;
+
+    var badgesHtml = '';
+    if (item.tags) {
+      item.tags.forEach(function(t) {
+        if (t === 'baby')    badgesHtml += '<span class="badge badge-baby">👶 Baby-friendly</span>';
+        if (t === 'elderly') badgesHtml += '<span class="badge badge-elderly">👴 Elderly-friendly</span>';
+        if (t === 'active')  badgesHtml += '<span class="badge badge-active">🥾 Active</span>';
+      });
+    }
+    if (isOpt) badgesHtml += '<span class="badge badge-opt">✦ Optional</span>';
+
+    var naverUrl = 'https://map.naver.com/p/search/' + encodeURIComponent((item.address || '') + ' ' + item.mapQuery);
+    html +=
+      '<div class="activity-card">' +
+        '<div class="activity-card-header">' +
+          '<div class="activity-emoji">' + item.emoji + '</div>' +
+          '<div class="activity-name-wrap">' +
+            '<div class="activity-name">' + item.name + '</div>' +
+            (badgesHtml ? '<div class="activity-badges">' + badgesHtml + '</div>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="activity-desc">' + item.desc + '</div>' +
+        (item.address ? '<div class="activity-addr">📍 ' + item.address + '</div>' : '') +
+        '<div style="display:flex;gap:7px;padding:0 13px 12px;flex-wrap:wrap;">' +
+          '<a class="activity-map-btn" href="' + appleUrl + '" target="_blank">🗺️ Apple</a>' +
+          '<a class="activity-map-btn green" href="' + googleUrl + '" target="_blank">📍 Google</a>' +
+          '<a class="activity-map-btn naver" href="' + naverUrl + '" target="_blank">🟢 Naver</a>' +
+        '</div>' +
+      '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderDayContent(idx) {
+  var d = TRIP.days[idx];
+
+  // Flight day
+  if (d.zone === 'flight') {
+    var html = '<div class="flight-card animate-in">' +
+      '<div class="flight-plane">✈️</div>' +
+      '<div class="flight-title">Time to Fly Home!</div>' +
+      '<div class="flight-sub">' + d.date + ' · Jeju → Singapore</div>' +
+      '<div class="flight-badges">';
+    d.tips.forEach(function(t) { html += '<div class="flight-badge">💡 ' + t + '</div>'; });
+    html += '</div></div>' +
+      '<div class="tips-banner animate-in">' +
+        '<div class="tips-title">🇰🇷 Annyeong Jeju!</div>' +
+        '<div class="tips-pills">' +
+          '<div class="tip-pill">✈️ Jeju International Airport</div>' +
+          '<div class="tip-pill">🕐 Allow extra time with baby</div>' +
+          '<div class="tip-pill">🛍️ Duty free treats!</div>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('dayContent').innerHTML = html;
+    document.getElementById('dayContent').parentElement.scrollTop = 0;
+    return;
+  }
+
+  var mq = encodeURIComponent(d.hotelAddress);
+  var zoneLabel = d.zone === 'south' ? '🌊 South Jeju' : '🌿 North Jeju';
+
+  var tipsHtml = '';
+  if (d.tips && d.tips.length) {
+    tipsHtml = '<div class="tips-banner animate-in"><div class="tips-title">✨ Tips for your crew</div><div class="tips-pills">';
+    d.tips.forEach(function(t) { tipsHtml += '<div class="tip-pill">💡 ' + t + '</div>'; });
+    tipsHtml += '</div></div>';
+  }
+
+  var hotelSection = d.hotel ? (
+    '<div class="section-card animate-in" data-section="hotel">' +
+    '<div class="section-header">' +
+      '<div class="section-icon si-hotel">🏨</div>' +
+      '<div class="section-label">Hotel</div>' +
+      '<div class="section-caret">▼</div>' +
+    '</div>' +
+    '<div class="section-body">' +
+      '<div class="hotel-block">' +
+        '<div class="hotel-name">' + d.hotel + '</div>' +
+        '<div class="hotel-addr">📍 ' + d.hotelAddress + '</div>' +
+        '<div class="btn-row">' +
+          '<a class="action-btn btn-apple" href="https://maps.apple.com/?q='+mq+'" target="_blank">🗺️ Apple</a>' +
+          '<a class="action-btn btn-google" href="https://maps.google.com/maps?daddr='+mq+'" target="_blank">📍 Google</a>' +
+          '<a class="action-btn btn-naver" href="https://map.naver.com/p/search/'+encodeURIComponent(d.hotel+' '+d.hotelAddress)+'" target="_blank">🟢 Naver</a>' +
+        '</div>' +
+      '</div>' +
+    '</div></div>'
+  ) : '';
+
+  var restSection =
+    '<div class="section-card animate-in" data-section="food">' +
+    '<div class="section-header">' +
+      '<div class="section-icon si-food">🍽️</div>' +
+      '<div class="section-label">Where to Eat</div>' +
+      '<div class="section-caret">▼</div>' +
+    '</div>' +
+    '<div class="section-body">' + renderRestaurants(d.restaurants) + '</div>' +
+    '</div>';
+
+  // keep legacy single restaurant block if present
+  if (d.restaurant) {
+    var r = d.restaurant;
+    var rmq = encodeURIComponent(r.mapQuery);
+    var mustOrderHtml = '';
+    if (r.mustOrder && r.mustOrder.length) {
+      mustOrderHtml = '<div class="rest-order-label">🍴 Must Order</div><div class="rest-order-items">';
+      r.mustOrder.forEach(function(m) { mustOrderHtml += '<span class="rest-order-pill">' + m + '</span>'; });
+      mustOrderHtml += '</div>';
+    }
+  }
+
+  var html =
+    '<div class="day-hero animate-in">' +
+      '<div class="hero-row">' +
+        '<div class="hero-left">' +
+          '<div class="hero-day">Day ' + d.day + ' · ' + d.date + '</div>' +
+          '<div class="hero-dest">' + d.to + '</div>' +
+          '<div class="hero-date">' + zoneLabel + '</div>' +
+          '<div class="hero-zone">🚗 Driving · Rented Car</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    tipsHtml +
+    hotelSection +
+    '<div class="section-card animate-in" data-section="todo">' +
+      '<div class="section-header">' +
+        '<div class="section-icon si-todo">⭐</div>' +
+        '<div class="section-label">Things To Do</div>' +
+        '<div class="section-caret">▼</div>' +
+      '</div>' +
+      '<div class="section-body">' + renderActivityCards(d.thingsToDo, false) + '</div>' +
+    '</div>' +
+    (d.optionalThingsToDo && d.optionalThingsToDo.length > 0 ?
+    '<div class="section-card animate-in" data-section="opt">' +
+      '<div class="section-header">' +
+        '<div class="section-icon si-opt">✨</div>' +
+        '<div class="section-label">Optional Extras</div>' +
+        '<div class="section-caret">▼</div>' +
+      '</div>' +
+      '<div class="section-body">' + renderActivityCards(d.optionalThingsToDo, true) + '</div>' +
+    '</div>' : '') +
+    restSection +
+    '<div style="height:8px"></div>';
+
+  document.getElementById('dayContent').innerHTML = html;
+  document.getElementById('dayContent').parentElement.scrollTop = 0;
+  setTimeout(function() {
+    var first = document.querySelector('#dayContent .section-card');
+    if (first) first.classList.add('open');
+  }, 50);
+}
+
+function renderOverview() {
+  var html = '';
+  TRIP.days.forEach(function(d, i) {
+    var color = ZONE_STRIPES[i] || '#1565C0';
+    var hotelText = d.hotel ? '🏨 ' + d.hotel : (d.zone === 'flight' ? '✈️ Fly home day' : '');
+    html += '<div class="ov-card" data-goto="'+i+'">' +
+      '<div class="ov-stripe" style="background:'+color+'"></div>' +
+      '<div class="ov-inner">' +
+        '<div class="ov-meta">' +
+          '<span class="ov-day-num">Day ' + d.day + '</span>' +
+          '<span class="ov-date">· ' + d.date + '</span>' +
+        '</div>' +
+        '<div class="ov-dest">' + d.to + '</div>' +
+        (hotelText ? '<div class="ov-hotel">' + hotelText + '</div>' : '') +
+      '</div>' +
+      '<div class="ov-arrow">›</div>' +
+    '</div>';
+  });
+  document.getElementById('overviewList').innerHTML = html;
+}
+
+function renderPacking() {
+  var html = '';
+  PACKING.forEach(function(cat, ci) {
+    var checked = 0;
+    cat.items.forEach(function(item, ii) { if (packingState[ci+'_'+ii]) checked++; });
+    html += '<div class="pack-cat" data-cat="'+ci+'">' +
+      '<div class="pack-cat-hdr">' +
+        '<span class="pack-cat-icon">'+cat.icon+'</span>' +
+        '<span class="pack-cat-name">'+cat.category+'</span>' +
+        '<span class="pack-cat-count">'+checked+'/'+cat.items.length+'</span>' +
+        '<span class="pack-cat-caret">▼</span>' +
+      '</div>' +
+      '<div class="pack-items-body">';
+    cat.items.forEach(function(item, ii) {
+      var key = ci+'_'+ii;
+      var chk = !!packingState[key];
+      html += '<div class="pack-item'+(chk?' checked':'')+'" data-pack-key="'+key+'">' +
+        '<div class="pack-check">'+(chk?'✓':'')+'</div>' +
+        '<div class="pack-item-text">'+item.text+'</div>' +
+        (item.tag ? '<span class="pack-item-tag">'+item.tag+'</span>' : '') +
+      '</div>';
+    });
+    html += '</div></div>';
+  });
+  document.getElementById('packingContent').innerHTML = html;
+}
+
+function switchScreen(name) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+  var s = document.getElementById('screen-'+name);
+  if (s) s.classList.add('active');
+  var btn = document.querySelector('[data-screen="'+name+'"]');
+  if (btn) btn.classList.add('active');
+  if (name==='overview') renderOverview();
+  if (name==='packing') renderPacking();
+}
+
+// ─── EVENT DELEGATION ───
+document.getElementById('dayStrip').addEventListener('click', function(e) {
+  var chip = e.target.closest('.day-chip');
+  if (!chip) return;
+  currentDay = parseInt(chip.getAttribute('data-day'));
+  renderDayStrip();
+  renderDayContent(currentDay);
+});
+
+document.getElementById('content').addEventListener('click', function(e) {
+  // Meal tab switching
+  var tab = e.target.closest('.meal-tab');
+  if (tab) {
+    var mealKey = tab.getAttribute('data-meal');
+    var container = tab.closest('.section-body');
+    container.querySelectorAll('.meal-tab').forEach(function(t) { t.classList.remove('active'); });
+    container.querySelectorAll('.meal-panel').forEach(function(p) { p.classList.remove('active'); });
+    tab.classList.add('active');
+    var panel = container.querySelector('[data-panel="'+mealKey+'"]');
+    if (panel) panel.classList.add('active');
+    return;
+  }
+  // Section card toggle
+  var header = e.target.closest('.section-header');
+  if (!header) return;
+  var card = header.closest('.section-card');
+  if (card) card.classList.toggle('open');
+});
+
+document.getElementById('bottom-nav').addEventListener('click', function(e) {
+  var btn = e.target.closest('.nav-btn');
+  if (!btn) return;
+  var screen = btn.getAttribute('data-screen');
+  if (screen) switchScreen(screen);
+});
+
+document.getElementById('overviewList').addEventListener('click', function(e) {
+  var card = e.target.closest('.ov-card');
+  if (!card) return;
+  currentDay = parseInt(card.getAttribute('data-goto'));
+  renderDayStrip();
+  renderDayContent(currentDay);
+  switchScreen('itinerary');
+});
+
+document.getElementById('packingContent').addEventListener('click', function(e) {
+  var hdr = e.target.closest('.pack-cat-hdr');
+  if (hdr) { hdr.closest('.pack-cat').classList.toggle('open'); return; }
+  var item = e.target.closest('.pack-item');
+  if (item) {
+    var key = item.getAttribute('data-pack-key');
+    packingState[key] = !packingState[key];
+    savePacking();
+    renderPacking();
+  }
+});
+
+// ─── INIT ───
+setTimeout(function() {
+  var splash = document.getElementById('splash');
+  splash.classList.add('fade-out');
+  document.getElementById('app').classList.add('visible');
+  setTimeout(function() { splash.style.display='none'; }, 900);
+}, 2400);
+
+renderDayStrip();
+renderDayContent(currentDay);
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/travel-app/sw.js').catch(function() {});
+  });
+}
+</script>
+</body>
+</html>
