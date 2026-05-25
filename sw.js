@@ -1,9 +1,11 @@
-// Jeju Family Adventure PWA — v2
-const CACHE = 'jeju-trip-v2';
+// Jeju Family Adventure PWA — v4
+const CACHE = 'jeju-trip-v4';
+const BASE = 'https://ghimmy.github.io/Korea-Trip/';
 const STATIC = [
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
+  BASE + 'index.html',
+  BASE + 'manifest.json',
+  BASE + 'icon-192.png',
+  BASE + 'icon-512.png',
 ];
 
 self.addEventListener('install', function(e) {
